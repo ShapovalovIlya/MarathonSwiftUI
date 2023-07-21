@@ -3,6 +3,9 @@
 
 import PackageDescription
 
+fileprivate let SwiftUDF: Target.Dependency = "SwiftUDF"
+fileprivate let SharedContent: Target.Dependency = "Shared"
+
 let package = Package(
     name: "HackingWithSwiftUI",
     platforms: [
@@ -14,6 +17,7 @@ let package = Package(
         .library(name: "GuessTheFlag", targets: ["GuessTheFlag"]),
         .library(name: "UnitConversions", targets: ["UnitConversions"]),
         .library(name: "Shared", targets: ["Shared"]),
+        .library(name: "RockPaperScissors", targets: ["RockPaperScissors"]),
     ],
     dependencies: [
     ],
@@ -23,8 +27,8 @@ let package = Package(
         .target(
             name: "HackingWithSwiftUI",
             dependencies: [
-                "SwiftUDF",
-                "WeSplit",
+                SwiftUDF,
+                SharedContent,
                 "GuessTheFlag",
                 "UnitConversions",
             ]),
@@ -40,13 +44,20 @@ let package = Package(
         .target(
             name: "UnitConversions",
             dependencies: [
-                "SwiftUDF",
-                "Shared",
+                SwiftUDF,
+                SharedContent,
+            ]),
+        .target(
+            name: "RockPaperScissors",
+            dependencies: [
+                SwiftUDF,
+                SharedContent,
             ]),
         .testTarget(
             name: "AppTests",
             dependencies: [
-                "UnitConversions"
+                "UnitConversions",
+                "RockPaperScissors",
             ]),
     ]
 )
