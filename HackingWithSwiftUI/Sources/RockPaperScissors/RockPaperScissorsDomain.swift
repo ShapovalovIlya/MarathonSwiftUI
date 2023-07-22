@@ -14,6 +14,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
     public struct State {
         public var playerWeapon: WeaponType
         public var enemyWeapon: WeaponType
+        public var gameExpectation: GameExpectation
         public var alertTitle: String
         public var score: Int
         public var isAlertShown: Bool
@@ -21,10 +22,12 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         //MARK: - init(_:)
         public init(
             playerWeapon: WeaponType = .allCases.randomElement() ?? .rock,
-            enemyWeapon: WeaponType = .rock
+            enemyWeapon: WeaponType = .rock,
+            gameExpectation: GameExpectation = .draw
         ) {
             self.playerWeapon = playerWeapon
             self.enemyWeapon = enemyWeapon
+            self.gameExpectation = gameExpectation
             self.alertTitle = .init()
             self.score = .init()
             self.isAlertShown = false
@@ -33,53 +36,40 @@ public struct RockPaperScissorsDomain: ReducerDomain {
     
     //MARK: - Action
     public enum Action: Equatable {
-        case setPlayerWeapon(WeaponType)
-        case setEnemyWeapon(WeaponType)
-        case getRandomEnemyWeapon
+        case setupRound
+        case playerChooseWeapon(WeaponType)
         case playRound
-        case computeBattle
         case playerLose
         case playerWin
         case draw
     }
     
     //MARK: - Dependencies
-    private var randomWeapon: () -> WeaponType
+    private var weaponGenerator: () -> WeaponType
+    private var expectationGenerator: () -> GameExpectation
     
     //MARK: - init(_:)
     public init(
-        randomWeapon: @escaping () -> WeaponType = { .allCases.randomElement() ?? .rock }
+        weaponGenerator: @escaping () -> WeaponType = { WeaponType.allCases.randomElement() ?? .rock },
+        expectationGenerator: @escaping () -> GameExpectation = { GameExpectation.allCases.randomElement() ?? .draw }
     ) {
-        self.randomWeapon = randomWeapon
+        self.weaponGenerator = weaponGenerator
+        self.expectationGenerator = expectationGenerator
     }
     
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
-        case let .setPlayerWeapon(weapon):
+        case .setupRound:
+            state.gameExpectation = expectationGenerator()
+            state.enemyWeapon = weaponGenerator()
+            
+        case let .playerChooseWeapon(weapon):
             state.playerWeapon = weapon
-            return Just(.getRandomEnemyWeapon).eraseToAnyPublisher()
-            
-        case .getRandomEnemyWeapon:
-            let weapon = randomWeapon()
-            return Just(.setEnemyWeapon(weapon)).eraseToAnyPublisher()
-            
-        case let .setEnemyWeapon(weapon):
-            state.enemyWeapon = weapon
+            return Just(.playRound).eraseToAnyPublisher()
             
         case .playRound:
-            state.enemyWeapon = .allCases.randomElement() ?? .paper
-            return Just(.computeBattle).eraseToAnyPublisher()
-            
-        case .computeBattle:
-            if state.playerWeapon == state.enemyWeapon {
-                return Just(.draw).eraseToAnyPublisher()
-            }
-            
-            guard state.playerWeapon.weakness == state.enemyWeapon else {
-                return Just(.playerWin).eraseToAnyPublisher()
-            }
-            return Just(.playerLose).eraseToAnyPublisher()
+            return computeBattleResult(&state)
             
         case .playerWin:
             state.score += 1
@@ -104,4 +94,15 @@ public struct RockPaperScissorsDomain: ReducerDomain {
     public static let previewStore = Store(
         state: Self.State(),
         reducer: Self())
+    
+    //MARK: - Private
+    private func computeBattleResult(_ state: inout State) -> AnyPublisher<Action, Never> {
+        if state.playerWeapon == state.enemyWeapon {
+            return Just(.draw).eraseToAnyPublisher()
+        }
+        guard state.playerWeapon.weakness == state.enemyWeapon else {
+            return Just(.playerWin).eraseToAnyPublisher()
+        }
+        return Just(.playerLose).eraseToAnyPublisher()
+    }
 }

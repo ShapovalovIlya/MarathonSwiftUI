@@ -30,86 +30,54 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         try await super.tearDown()
     }
     
-    func test_setPlayerWeapon() {
-        _ = sut.reduce(&state, action: .setPlayerWeapon(.scissors))
+    func test_setupRound_playerShouldWinState() {
+        sut = .init(
+            weaponGenerator: { .paper },
+            expectationGenerator: { .playerWin }
+        )
+        
+        _ = sut.reduce(&state, action: .setupRound)
+        
+        XCTAssertEqual(state.gameExpectation, .playerWin)
+        XCTAssertEqual(state.enemyWeapon, .paper)
+    }
+    
+    func test_setupRound_playerShouldLooseState() {
+        sut = .init(
+            weaponGenerator: { .rock },
+            expectationGenerator: { .playerLoose }
+        )
+        
+        _ = sut.reduce(&state, action: .setupRound)
+        
+        XCTAssertEqual(state.gameExpectation, .playerLoose)
+        XCTAssertEqual(state.enemyWeapon, .rock)
+    }
+    
+    func test_setupRound_drawState() {
+        sut = .init(
+            weaponGenerator: { .scissors },
+            expectationGenerator: { .draw }
+        )
+        
+        _ = sut.reduce(&state, action: .setupRound)
+        
+        XCTAssertEqual(state.gameExpectation, .draw)
+        XCTAssertEqual(state.enemyWeapon, .scissors)
+    }
+    
+    func test_playerChooseWeapon() {
+        _ = sut.reduce(&state, action: .playerChooseWeapon(.scissors))
         
         XCTAssertEqual(state.playerWeapon, .scissors)
     }
     
-    func test_setPlayerWeaponEmitRandomizeEnemyWeaponAction() {
-        _ = sut.reduce(&state, action: .setPlayerWeapon(.scissors))
-            .sink { [unowned self] action in
+    func test_chooseWeaponEmitPlayRoundAction() {
+        _ = sut.reduce(&state, action: .playerChooseWeapon(.paper))
+            .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
-                XCTAssertEqual(action, .getRandomEnemyWeapon)
-            }
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_getRandomWeaponSetEnemyWeapon() {
-        sut = RockPaperScissorsDomain(randomWeapon: { .paper })
-        
-        _ = sut.reduce(&state, action: .getRandomEnemyWeapon)
-            .sink { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .setEnemyWeapon(.paper))
-            }
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_setEnemyWeapon() {
-        _ = sut.reduce(&state, action: .setEnemyWeapon(.scissors))
-        
-        XCTAssertEqual(state.enemyWeapon, .scissors)
-    }
-    
-    func test_playRoundEmitAction() {
-        _ = sut.reduce(&state, action: .playRound)
-            .sink { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .computeBattle)
-            }
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_computeBattleEmitPlayerWinAction() {
-        state.playerWeapon = .rock
-        state.enemyWeapon = .scissors
-        
-        _ = sut.reduce(&state, action: .computeBattle)
-            .sink { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .playerWin)
-            }
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_computeBattleEmitPlayerLooseAction() {
-        state.playerWeapon = .paper
-        state.enemyWeapon = .scissors
-        
-        _ = sut.reduce(&state, action: .computeBattle)
-            .sink { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .playerLose)
-            }
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_computeBattleEmitDraw() {
-        state.playerWeapon = .paper
-        state.enemyWeapon = .paper
-        
-        _ = sut.reduce(&state, action: .computeBattle)
-            .sink { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .draw)
-            }
-        
+                XCTAssertEqual(action, .playRound)
+            })
         wait(for: [expectation], timeout: 0.1)
     }
     
