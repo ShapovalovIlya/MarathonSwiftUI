@@ -19,7 +19,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         public var alertDescription: String
         public var score: Int
         public var currentRound: Int
-        let totalRounds: Int
+        let maxRoundsCount: Int
         public var isAlertShown: Bool
         
         //MARK: - init(_:)
@@ -34,7 +34,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             self.alertTitle = .init()
             self.alertDescription = .init()
             self.score = .init()
-            self.totalRounds = 10
+            self.maxRoundsCount = 10
             self.currentRound = 0
             self.isAlertShown = false
         }
@@ -51,6 +51,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         case expectationFulfill
         case expectationNotMatch
         case showGameResult(Bool)
+        case gameOver
     }
     
     //MARK: - Dependencies
@@ -91,14 +92,16 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             return reduce(state.gameExpectation, withResult: .draw)
             
         case .expectationFulfill:
-            return Just(.showGameResult(true)).eraseToAnyPublisher()
+            return reduceGameFlow(state, isFulfill: true)
             
         case .expectationNotMatch:
-            return Just(.showGameResult(false)).eraseToAnyPublisher()
+            return reduceGameFlow(state, isFulfill: false)
             
         case let .showGameResult(result):
             reduce(&state, isFulfill: result)
             
+        case .gameOver:
+            break
         }
         return Empty().eraseToAnyPublisher()
     }
@@ -144,5 +147,12 @@ private extension RockPaperScissorsDomain {
         }
         state.alertDescription = "Your score: \(state.score)"
         state.isAlertShown = true
+    }
+    
+    private func reduceGameFlow(_ state: State, isFulfill: Bool) -> AnyPublisher<Action, Never> {
+        guard state.currentRound < state.maxRoundsCount else {
+            return Just(.gameOver).eraseToAnyPublisher()
+        }
+        return Just(.showGameResult(isFulfill)).eraseToAnyPublisher()
     }
 }

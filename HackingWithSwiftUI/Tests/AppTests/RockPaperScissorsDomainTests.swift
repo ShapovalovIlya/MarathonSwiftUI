@@ -164,12 +164,36 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         wait(for: [expectation], timeout: 0.1)
     }
     
+    func test_ExpectationFulfillEmitGameOver() {
+        state.currentRound = 10
+        
+        _ = sut.reduce(&state, action: .expectationFulfill)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .gameOver)
+            })
+        
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
     func test_ExpectationNotMatchEmitGameResultFalse() {
         _ = sut.reduce(&state, action: .expectationNotMatch)
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .showGameResult(false))
             })
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_ExpectationNotMatchEmitGameOver() {
+        state.currentRound = 10
+        
+        _ = sut.reduce(&state, action: .expectationNotMatch)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .gameOver)
+            })
+        
         wait(for: [expectation], timeout: 0.1)
     }
     
