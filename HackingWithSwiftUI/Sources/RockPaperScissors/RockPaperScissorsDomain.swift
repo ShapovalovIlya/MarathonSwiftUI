@@ -101,7 +101,11 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             reduce(&state, isFulfill: result)
             
         case .gameOver:
-            break
+            state.alertTitle = "Game over!"
+            state.alertDescription = "Your score is \(state.score) from 10"
+            state.isAlertShown = true
+            state.currentRound = 0
+            state.score = 0
         }
         return Empty().eraseToAnyPublisher()
     }

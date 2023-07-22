@@ -233,7 +233,15 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         XCTAssertEqual(state.score, 0)
     }
     
-    func test_() {
+    func test_reduceGameOver() {
+        state.score = 1
         
+        _ = sut.reduce(&state, action: .gameOver)
+        
+        XCTAssertEqual(state.alertTitle, "Game over!")
+        XCTAssertEqual(state.alertDescription, "Your score is 1 from 10")
+        XCTAssertTrue(state.isAlertShown)
+        XCTAssertEqual(state.score, 0)
+        XCTAssertEqual(state.currentRound, 0)
     }
 }
