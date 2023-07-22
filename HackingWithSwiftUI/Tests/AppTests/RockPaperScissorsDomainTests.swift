@@ -244,4 +244,12 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         XCTAssertEqual(state.score, 0)
         XCTAssertEqual(state.currentRound, 0)
     }
+    
+    func test_reduceDismissAlert() {
+        state.isAlertShown = true
+        
+        _ = sut.reduce(&state, action: .dismissAlert)
+        
+        XCTAssertFalse(state.isAlertShown)
+    }
 }

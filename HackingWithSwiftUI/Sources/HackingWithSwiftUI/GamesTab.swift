@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftUDF
 import GuessTheFlag
+import RockPaperScissors
 
 struct GamesTab: View {
    
@@ -17,6 +18,9 @@ struct GamesTab: View {
                 Section {
                     NavigationLink("Guess the flag") {
                         GuessTheFlagView(store: GuessTheFlagDomain.previewStore)
+                    }
+                    NavigationLink("Rock-Paper-Scissors") {
+                        RockPaperScissorsView(store: RockPaperScissorsDomain.previewStore)
                     }
                 }
             }

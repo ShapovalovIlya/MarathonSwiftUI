@@ -31,6 +31,8 @@ let package = Package(
                 SharedContent,
                 "GuessTheFlag",
                 "UnitConversions",
+                "RockPaperScissors",
+                "WeSplit",
             ]),
         .target(
             name: "WeSplit",

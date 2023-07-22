@@ -52,6 +52,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         case expectationNotMatch
         case showGameResult(Bool)
         case gameOver
+        case dismissAlert
     }
     
     //MARK: - Dependencies
@@ -106,6 +107,9 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             state.isAlertShown = true
             state.currentRound = 0
             state.score = 0
+            
+        case .dismissAlert:
+            state.isAlertShown = false
         }
         return Empty().eraseToAnyPublisher()
     }
