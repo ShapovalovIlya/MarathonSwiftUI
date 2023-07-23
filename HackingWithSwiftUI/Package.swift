@@ -18,6 +18,7 @@ let package = Package(
         .library(name: "UnitConversions", targets: ["UnitConversions"]),
         .library(name: "Shared", targets: ["Shared"]),
         .library(name: "RockPaperScissors", targets: ["RockPaperScissors"]),
+        .library(name: "BetterRest", targets: ["BetterRest"]),
     ],
     dependencies: [
     ],
@@ -55,11 +56,21 @@ let package = Package(
                 SwiftUDF,
                 SharedContent,
             ]),
+        .target(
+            name: "BetterRest",
+            dependencies: [
+                SwiftUDF,
+                SharedContent,
+            ],
+            resources: [
+                .process("Resources"),
+            ]),
         .testTarget(
             name: "AppTests",
             dependencies: [
                 "UnitConversions",
                 "RockPaperScissors",
+                "BetterRest"
             ]),
     ]
 )
