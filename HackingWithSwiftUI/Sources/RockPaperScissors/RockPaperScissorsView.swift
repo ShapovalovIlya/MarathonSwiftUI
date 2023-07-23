@@ -17,42 +17,29 @@ public struct RockPaperScissorsView: View {
     }
     
     public var body: some View {
-        ZStack {
-            GameBackground()
-                .ignoresSafeArea()
-            VStack {
-                GameText(text: "Score: \(store.score)")
+        VStack {
+            GameText(text: "Score: \(store.score)")
+                .equatable()
+            Spacer()
+            EnemyWeaponLabel(weapon: store.enemyWeapon)
+                .equatable()
+            
+            GameText(text: store.gameExpectation.prompt)
+                .equatable()
+                .animation(.easeInOut, value: store.currentRound)
+            
+            Spacer()
+            HStack(spacing: Drawing.buttonsSpacing) {
+                ForEach(store.armory) { weapon in
+                    WeaponButton(
+                        type: weapon,
+                        action: { store.send(.playerChooseWeapon($0)) })
                     .equatable()
-                Spacer()
-                EnemyWeaponLabel(weapon: store.enemyWeapon)
-                    .equatable()
-                GameText(text: store.gameExpectation.prompt)
-                Spacer()
-                HStack(spacing: Drawing.buttonsSpacing) {
-                    ForEach(WeaponType.allCases.shuffled()) { weapon in
-                        WeaponButton(
-                            type: weapon,
-                            action: { store.send(.playerChooseWeapon($0)) })
-                        .equatable()
-                    }
                 }
             }
-            .padding()
+            .animation(.easeInOut, value: store.currentRound)
         }
-        .onAppear { store.send(.setupRound) }
-        .alert(
-            store.alertTitle,
-            isPresented:  Binding(
-                get: { store.isAlertShown },
-                set: { _ in store.send(.dismissAlert) })
-        ) {
-            Button(
-                "Continue",
-                role: .cancel,
-                action: { store.send(.setupRound) })
-        } message: {
-            Text(store.alertDescription)
-        }
+        .padding()
     }
     
     public init(store: StoreOf<RockPaperScissorsDomain>) {

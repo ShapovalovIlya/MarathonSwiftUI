@@ -19,24 +19,34 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         public var alertDescription: String
         public var score: Int
         public var currentRound: Int
+        public var armory: [WeaponType]
         let maxRoundsCount: Int
         public var isAlertShown: Bool
+        public var isPlayingGame: Bool
         
         //MARK: - init(_:)
         public init(
-            playerWeapon: WeaponType = .allCases.randomElement() ?? .rock,
+            playerWeapon: WeaponType = .rock,
             enemyWeapon: WeaponType = .rock,
-            gameExpectation: GameExpectation = .draw
+            gameExpectation: GameExpectation = .draw,
+            alertTitle: String = "Hello there!",
+            alertDescription: String = "Let's play a game...",
+            score: Int = .init(),
+            currentRound: Int = .init(),
+            isAlertShown: Bool = false,
+            isPlayingGame: Bool = false
         ) {
             self.playerWeapon = playerWeapon
             self.enemyWeapon = enemyWeapon
             self.gameExpectation = gameExpectation
-            self.alertTitle = .init()
-            self.alertDescription = .init()
-            self.score = .init()
+            self.alertTitle = alertTitle
+            self.alertDescription = alertDescription
+            self.score = score
             self.maxRoundsCount = 10
-            self.currentRound = 0
-            self.isAlertShown = false
+            self.currentRound = currentRound
+            self.armory = WeaponType.allCases
+            self.isAlertShown = isAlertShown
+            self.isPlayingGame = isPlayingGame
         }
     }
     
@@ -75,6 +85,8 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             state.currentRound += 1
             state.gameExpectation = expectationGenerator()
             state.enemyWeapon = weaponGenerator()
+            state.armory.shuffle()
+            state.isPlayingGame = true
             
         case let .playerChooseWeapon(weapon):
             state.playerWeapon = weapon
@@ -104,7 +116,8 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         case .gameOver:
             state.alertTitle = "Game over!"
             state.alertDescription = "Your score is \(state.score) from 10"
-            state.isAlertShown = true
+            state.isAlertShown = false
+            state.isPlayingGame = false
             state.currentRound = 0
             state.score = 0
             
@@ -118,12 +131,24 @@ public struct RockPaperScissorsDomain: ReducerDomain {
     public static let previewStore = Store(
         state: Self.State(),
         reducer: Self())
+    
+    static let previewStoreAlertState = Store(
+        state: Self.State(alertTitle: "Right!", alertDescription: "Your score is 1", isAlertShown: true),
+        reducer: Self())
+    
+    static let previewStoreGameOverState = Store(
+        state: Self.State(alertTitle: "Game over!", alertDescription: "Your score is 1 from 10.", isPlayingGame: false),
+        reducer: Self())
+    
+    static let previewStoreGameState = Store(
+        state: Self.State(isPlayingGame: true),
+        reducer: Self())
 }
 
 //MARK: - Private methods
 private extension RockPaperScissorsDomain {
     private func computeBattleResult(_ state: inout State) -> AnyPublisher<Action, Never> {
-        if state.playerWeapon == state.enemyWeapon {
+        guard state.playerWeapon != state.enemyWeapon else {
             return Just(.draw).eraseToAnyPublisher()
         }
         guard state.playerWeapon.weakness == state.enemyWeapon else {

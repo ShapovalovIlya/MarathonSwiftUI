@@ -30,6 +30,12 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         try await super.tearDown()
     }
     
+    func test_initialStateIsPlayingGame() {
+        _ = sut.reduce(&state, action: .setupRound)
+        
+        XCTAssertTrue(state.isPlayingGame)
+    }
+    
     func test_setupRound_playerShouldWinState() {
         state.currentRound = 0
         sut = .init(
@@ -235,14 +241,15 @@ final class RockPaperScissorsDomainTests: XCTestCase {
     
     func test_reduceGameOver() {
         state.score = 1
+        state.isPlayingGame = true
         
         _ = sut.reduce(&state, action: .gameOver)
         
-        XCTAssertEqual(state.alertTitle, "Game over!")
         XCTAssertEqual(state.alertDescription, "Your score is 1 from 10")
-        XCTAssertTrue(state.isAlertShown)
+        XCTAssertFalse(state.isAlertShown)
         XCTAssertEqual(state.score, 0)
         XCTAssertEqual(state.currentRound, 0)
+        XCTAssertFalse(state.isPlayingGame)
     }
     
     func test_reduceDismissAlert() {
@@ -251,5 +258,44 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         _ = sut.reduce(&state, action: .dismissAlert)
         
         XCTAssertFalse(state.isAlertShown)
+    }
+    
+    func test_playRoundEmitDrawResult() {
+        state.playerWeapon = .paper
+        state.enemyWeapon = .paper
+        
+        _ = sut.reduce(&state, action: .playRound)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .draw)
+            })
+        
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_playRoundEmitPlayerWinResult() {
+        state.playerWeapon = .paper
+        state.enemyWeapon = .rock
+        
+        _ = sut.reduce(&state, action: .playRound)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .playerWin)
+            })
+        
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_playRoundEmitPlayerLooseResult() {
+        state.playerWeapon = .paper
+        state.enemyWeapon = .scissors
+        
+        _ = sut.reduce(&state, action: .playRound)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .playerLose)
+            })
+        
+        wait(for: [expectation], timeout: 0.1)
     }
 }

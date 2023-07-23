@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "E875CBCD-E918-4E5F-8633-3BE1CD6145A7",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "AppTests",
+        "name" : "AppTests"
+      }
+    }
+  ],
+  "version" : 1
+}
