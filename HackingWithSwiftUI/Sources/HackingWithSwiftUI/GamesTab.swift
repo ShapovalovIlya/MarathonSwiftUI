@@ -20,7 +20,7 @@ struct GamesTab: View {
                         GuessTheFlagView(store: GuessTheFlagDomain.previewStore)
                     }
                     NavigationLink("Rock-Paper-Scissors") {
-                        RockPaperScissorsView(store: RockPaperScissorsDomain.previewStore)
+                        RockPaperScissorsContentView(store: RockPaperScissorsDomain.previewStore)
                     }
                 }
             }

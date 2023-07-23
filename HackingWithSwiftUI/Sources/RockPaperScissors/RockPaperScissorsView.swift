@@ -9,14 +9,14 @@ import SwiftUI
 import SwiftUDF
 import Shared
 
-public struct RockPaperScissorsView: View {
+struct RockPaperScissorsView: View {
     @ObservedObject public var store: StoreOf<RockPaperScissorsDomain>
     
     private struct Drawing {
         static let buttonsSpacing: CGFloat = 5
     }
     
-    public var body: some View {
+    var body: some View {
         VStack {
             GameText(text: "Score: \(store.score)")
                 .equatable()
@@ -42,9 +42,6 @@ public struct RockPaperScissorsView: View {
         .padding()
     }
     
-    public init(store: StoreOf<RockPaperScissorsDomain>) {
-        self.store = store
-    }
 }
 
 struct RockPaperScissorsView_Previews: PreviewProvider {

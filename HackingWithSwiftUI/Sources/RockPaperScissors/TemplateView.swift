@@ -10,7 +10,7 @@ import SwiftUI
 struct TemplateView: View {
     let title: String
     let description: String
-    let playAgain: () -> Void
+    let play: () -> Void
     
     var body: some View {
         VStack(spacing: 50) {
@@ -19,7 +19,7 @@ struct TemplateView: View {
             Text(description)
                 .font(.title2)
             Spacer()
-            Button(action: playAgain) {
+            Button(action: play) {
                 Text("Play!")
                     .font(.title3.bold())
                     .foregroundColor(.white)
@@ -44,6 +44,6 @@ struct GameOverView_Previews: PreviewProvider {
         TemplateView(
             title: "Game over!",
             description: "Some description!",
-            playAgain: {})
+            play: {})
     }
 }

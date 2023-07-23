@@ -1,5 +1,5 @@
 //
-//  GameContentView.swift
+//  RockPaperScissorsContentView.swift
 //  
 //
 //  Created by Илья Шаповалов on 23.07.2023.
@@ -8,13 +8,13 @@
 import SwiftUI
 import SwiftUDF
 
-struct GameContentView: View {
+public struct RockPaperScissorsContentView: View {
     @ObservedObject var store: StoreOf<RockPaperScissorsDomain>
     
     private let gameOverTransition: AnyTransition = .slide
     private let rockPaperScissorsTransition: AnyTransition = .move(edge: .top)
     
-    var body: some View {
+    public var body: some View {
         ZStack {
             GameBackground()
                 .ignoresSafeArea()
@@ -27,7 +27,7 @@ struct GameContentView: View {
                     TemplateView(
                         title: store.alertTitle,
                         description: store.alertDescription,
-                        playAgain: { store.send(.setupRound) })
+                        play: { store.send(.setupRound) })
                     .transition(gameOverTransition)
                 }
             }
@@ -48,24 +48,29 @@ struct GameContentView: View {
             Text(store.alertDescription)
         }
     }
+    
+    public init(store: StoreOf<RockPaperScissorsDomain>) {
+        self.store = store
+    }
+    
 }
 
 struct GameContentView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            GameContentView(store: RockPaperScissorsDomain.previewStore)
+            RockPaperScissorsContentView(store: RockPaperScissorsDomain.previewStore)
         }
         .previewDisplayName("Default state")
         NavigationStack {
-            GameContentView(store: RockPaperScissorsDomain.previewStoreGameState)
+            RockPaperScissorsContentView(store: RockPaperScissorsDomain.previewStoreGameState)
         }
         .previewDisplayName("Game state")
         NavigationStack {
-            GameContentView(store: RockPaperScissorsDomain.previewStoreGameOverState)
+            RockPaperScissorsContentView(store: RockPaperScissorsDomain.previewStoreGameOverState)
         }
         .previewDisplayName("Game over state")
         NavigationStack {
-            GameContentView(store: RockPaperScissorsDomain.previewStoreAlertState)
+            RockPaperScissorsContentView(store: RockPaperScissorsDomain.previewStoreAlertState)
         }
         .previewDisplayName("Alert state")
     }
