@@ -100,7 +100,7 @@ public struct BetterRestDomain: ReducerDomain {
     }
     
     //MARK: - Preview Store
-    static let previewStore = Store(
+    public static let previewStore = Store(
         state: Self.State(),
         reducer: Self())
 }

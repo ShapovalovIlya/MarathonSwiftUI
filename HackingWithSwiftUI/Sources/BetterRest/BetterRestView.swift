@@ -50,7 +50,7 @@ public struct BetterRestView: View {
                         get: { store.coffeeAmount },
                         set: { store.send(.setCoffeeAmount($0)) })
                 ) {
-                    ForEach(Range<Int>(0...20)) { amount in
+                    ForEach(Range<Int>(0...20), id: \.self) { amount in
                         Text(amount.description)
                             .tag(amount)
                     }

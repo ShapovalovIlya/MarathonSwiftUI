@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftUDF
 import WeSplit
 import UnitConversions
+import BetterRest
 
 struct AppsTab: View {
     
@@ -21,6 +22,9 @@ struct AppsTab: View {
                     }
                     NavigationLink("Unit conversion") {
                         UnitConversionsView(store: UnitConversionsDomain.previewStore)
+                    }
+                    NavigationLink("Better rest") {
+                        BetterRestView(store: BetterRestDomain.previewStore)
                     }
                 }
             }

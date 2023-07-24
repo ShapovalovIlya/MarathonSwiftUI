@@ -34,6 +34,7 @@ let package = Package(
                 "UnitConversions",
                 "RockPaperScissors",
                 "WeSplit",
+                "BetterRest",
             ]),
         .target(
             name: "WeSplit",
