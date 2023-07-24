@@ -16,36 +16,52 @@ public struct BetterRestDomain: ReducerDomain {
         public var wakeUp: Date
         public var coffeeAmount: Int
         public var coffeeCupsTitle: String
+        public var alertTitle: String
+        public var alertMessage: String
+        public var isAlertShown: Bool
         
         //MARK: - init(_:)
         public init(
             sleepAmount: Double = 8,
             wakeUp: Date = .init(),
             coffeeAmount: Int = .init(),
-            coffeeCupsTitle: String = .init()
+            coffeeCupsTitle: String = .init(),
+            alertTitle: String = .init(),
+            alertMessage: String = .init(),
+            isAlertShown: Bool = false
         ) {
             self.sleepAmount = sleepAmount
             self.wakeUp = wakeUp
             self.coffeeAmount = coffeeAmount
             self.coffeeCupsTitle = coffeeCupsTitle
+            self.alertTitle = alertTitle
+            self.alertMessage = alertMessage
+            self.isAlertShown = isAlertShown
         }
     }
     
     //MARK: - Action
-    public enum Action {
+    public enum Action: Equatable {
         case setSleepAmount(Double)
         case setWakeUpDate(Date)
         case setCoffeeAmount(Int)
         case calculateButtonTap
-        case calculateSleepResponse(Result<String,Error>)
+        case calculateSleepResponse(Result<Date,Error>)
+        case dismissAlert
+        
+        public static func == (lhs: BetterRestDomain.Action, rhs: BetterRestDomain.Action) -> Bool {
+            String(describing: lhs) == String(describing: rhs)
+        }
     }
     
     //MARK: - Dependency
-    private let sleepCalculator: SleepCalculatorService
+    private let predictSleep: (_ wakeUp: Date, _ sleep: Double, _ coffee: Int) -> AnyPublisher<Date, Error>
     
     //MARK: - init(_:)
-    public init(sleepCalculator: SleepCalculatorService = .live) {
-        self.sleepCalculator = sleepCalculator
+    public init(
+        predictSleep: @escaping (_ wakeUp: Date, _ sleep: Double, _ coffee: Int) -> AnyPublisher<Date, Error> = SleepCalculatorService.predictSleep
+    ) {
+        self.predictSleep = predictSleep
     }
     
     //MARK: - Reducer
@@ -62,17 +78,24 @@ public struct BetterRestDomain: ReducerDomain {
             state.coffeeCupsTitle = coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups"
             
         case .calculateButtonTap:
-            return sleepCalculator
-                .predictSleep(state.wakeUp, state.sleepAmount, state.coffeeAmount)
+            return predictSleep(state.wakeUp, state.sleepAmount, state.coffeeAmount)
                 .map(transformToAction(_:))
                 .catch(catchToAction(_:))
                 .eraseToAnyPublisher()
             
         case let .calculateSleepResponse(.success(bedTime)):
-            break
+            state.alertTitle = "Your ideal bedtime is…"
+            state.alertMessage = bedTime.formatted(date: .omitted, time: .shortened)
+            state.isAlertShown = true
             
         case let .calculateSleepResponse(.failure(error)):
-            break
+            print(error)
+            state.alertTitle = "Error"
+            state.alertMessage = "Sorry, there was a problem calculating your bedtime."
+            state.isAlertShown = true
+            
+        case .dismissAlert:
+            state.isAlertShown = false
             
         }
         return Empty().eraseToAnyPublisher()
@@ -85,8 +108,8 @@ public struct BetterRestDomain: ReducerDomain {
 }
 
 private extension BetterRestDomain {
-    func transformToAction(_ success: String) -> Action {
-        .calculateSleepResponse(.success(success))
+    func transformToAction(_ sleepDate: Date) -> Action {
+        .calculateSleepResponse(.success(sleepDate))
     }
     
     func catchToAction(_ error: Error) -> AnyPublisher<Action, Never> {
