@@ -69,7 +69,7 @@ final class BetterRestDomainTests: XCTestCase {
                 .eraseToAnyPublisher()
         })
         
-        _ = sut.reduce(&state, action: .calculateButtonTap)
+        _ = sut.reduce(&state, action: .calculateSleep)
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .calculateSleepResponse(.success(.now)))
@@ -84,7 +84,7 @@ final class BetterRestDomainTests: XCTestCase {
                 .eraseToAnyPublisher()
         })
         
-        _ = sut.reduce(&state, action: .calculateButtonTap)
+        _ = sut.reduce(&state, action: .calculateSleep)
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .calculateSleepResponse(.failure(URLError(.badURL))))
@@ -98,7 +98,6 @@ final class BetterRestDomainTests: XCTestCase {
         
         XCTAssertEqual(state.alertTitle, "Your ideal bedtime is…")
         XCTAssertEqual(state.alertMessage, Date.now.formatted(date: .omitted, time: .shortened))
-        XCTAssertTrue(state.isAlertShown)
     }
     
     func test_reduceFailureSleepResponse() {
@@ -106,15 +105,33 @@ final class BetterRestDomainTests: XCTestCase {
         
         XCTAssertEqual(state.alertTitle, "Error")
         XCTAssertEqual(state.alertMessage, "Sorry, there was a problem calculating your bedtime.")
-        XCTAssertTrue(state.isAlertShown)
     }
     
-    func test_reduceDismissAlertAction() {
-        state.isAlertShown = true
-        
-        _ = sut.reduce(&state, action: .dismissAlert)
-        
-        XCTAssertFalse(state.isAlertShown)
+    func test_setSleepAmountEmitCalculateSleepRequest() {
+        _ = sut.reduce(&state, action: .setSleepAmount(1))
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .calculateSleep)
+            })
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_setCoffeeAmountEmitCalculateSleepRequest() {
+        _ = sut.reduce(&state, action: .setCoffeeAmount(1))
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .calculateSleep)
+            })
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_setWakeUpEmitCalculateSleepRequest() {
+        _ = sut.reduce(&state, action: .setWakeUpDate(.now))
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .calculateSleep)
+            })
+        wait(for: [expectation], timeout: 0.1)
     }
 
 }

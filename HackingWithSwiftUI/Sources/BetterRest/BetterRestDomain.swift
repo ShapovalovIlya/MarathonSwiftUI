@@ -18,21 +18,18 @@ public struct BetterRestDomain: ReducerDomain {
         public var coffeeCupsTitle: String
         public var alertTitle: String
         public var alertMessage: String
-        public var isAlertShown: Bool
         
         //MARK: - init(_:)
         public init(
             sleepAmount: Double = 8,
             coffeeAmount: Int = .init(),
             alertTitle: String = .init(),
-            alertMessage: String = .init(),
-            isAlertShown: Bool = false
+            alertMessage: String = .init()
         ) {
             self.sleepAmount = sleepAmount
             self.coffeeAmount = coffeeAmount
             self.alertTitle = alertTitle
             self.alertMessage = alertMessage
-            self.isAlertShown = isAlertShown
             
             var components = DateComponents()
             components.hour = 7
@@ -50,9 +47,8 @@ public struct BetterRestDomain: ReducerDomain {
         case setSleepAmount(Double)
         case setWakeUpDate(Date)
         case setCoffeeAmount(Int)
-        case calculateButtonTap
+        case calculateSleep
         case calculateSleepResponse(Result<Date,Error>)
-        case dismissAlert
         
         public static func == (lhs: BetterRestDomain.Action, rhs: BetterRestDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
@@ -74,15 +70,18 @@ public struct BetterRestDomain: ReducerDomain {
         switch action {
         case let .setSleepAmount(sleepAmount):
             state.sleepAmount = sleepAmount
+            return Just(.calculateSleep).eraseToAnyPublisher()
             
         case let .setWakeUpDate(date):
             state.wakeUp = date
+            return Just(.calculateSleep).eraseToAnyPublisher()
             
         case let .setCoffeeAmount(coffeeAmount):
             state.coffeeAmount = coffeeAmount
             state.coffeeCupsTitle = coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups"
+            return Just(.calculateSleep).eraseToAnyPublisher()
             
-        case .calculateButtonTap:
+        case .calculateSleep:
             return predictSleep(state.wakeUp, state.sleepAmount, state.coffeeAmount)
                 .map(transformToAction(_:))
                 .catch(catchToAction(_:))
@@ -91,17 +90,11 @@ public struct BetterRestDomain: ReducerDomain {
         case let .calculateSleepResponse(.success(bedTime)):
             state.alertTitle = "Your ideal bedtime is…"
             state.alertMessage = bedTime.formatted(date: .omitted, time: .shortened)
-            state.isAlertShown = true
             
         case let .calculateSleepResponse(.failure(error)):
             print(error)
             state.alertTitle = "Error"
             state.alertMessage = "Sorry, there was a problem calculating your bedtime."
-            state.isAlertShown = true
-            
-        case .dismissAlert:
-            state.isAlertShown = false
-            
         }
         return Empty().eraseToAnyPublisher()
     }
@@ -109,10 +102,6 @@ public struct BetterRestDomain: ReducerDomain {
     //MARK: - Preview Store
     static let previewStore = Store(
         state: Self.State(),
-        reducer: Self())
-    
-    static let previewStoreAlertState = Store(
-        state: Self.State(alertTitle: "Your ideal bedtime is…", alertMessage: "8:00 pm", isAlertShown: true),
         reducer: Self())
 }
 

@@ -13,9 +13,12 @@ public struct BetterRestView: View {
     
     public var body: some View {
         Form {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("When do you want to wake up?")
-                    .font(.headline)
+            Section {
+                Text(store.alertMessage)
+            } header: {
+                Text(store.alertTitle)
+            }
+            Section {
                 DatePicker(
                     "Please enter a time",
                     selection: Binding(
@@ -25,11 +28,10 @@ public struct BetterRestView: View {
                     displayedComponents: .hourAndMinute
                 )
                 .labelsHidden()
+            } header: {
+                Text("When do you want to wake up?")
             }
-            
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Desired amount to sleep")
-                    .font(.headline)
+            Section {
                 Stepper(
                     "\(store.sleepAmount.formatted()) hours",
                     value: Binding(
@@ -38,34 +40,27 @@ public struct BetterRestView: View {
                     in: 4...12,
                     step: 0.25
                 )
+            } header: {
+                Text("Desired amount to sleep")
             }
-            
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Daily coffee intake")
-                    .font(.headline)
-                Stepper(
+            Section {
+                Picker(
                     store.coffeeCupsTitle,
-                    value: Binding(
+                    selection: Binding(
                         get: { store.coffeeAmount },
-                        set: { store.send(.setCoffeeAmount($0)) }),
-                    in: 0...20
-                )
+                        set: { store.send(.setCoffeeAmount($0)) })
+                ) {
+                    ForEach(Range<Int>(0...20)) { amount in
+                        Text(amount.description)
+                            .tag(amount)
+                    }
+                }
+            } header: {
+                Text("Daily coffee intake")
             }
         }
         .navigationTitle("Better rest")
-        .toolbar {
-            Button("Calculate", action: { store.send(.calculateButtonTap) })
-        }
-        .alert(
-            store.alertTitle,
-            isPresented: Binding(
-                get: { store.isAlertShown },
-                set: { _ in store.send(.dismissAlert) })
-        ) {
-            Button("Ok", role: .cancel, action: {})
-        } message: {
-            Text(store.alertMessage)
-        }
+        .onAppear { store.send(.calculateSleep) }
     }
     
     public init(store: StoreOf<BetterRestDomain>) {
@@ -79,9 +74,5 @@ struct BetterRestView_Previews: PreviewProvider {
             BetterRestView(store: BetterRestDomain.previewStore)
         }
         .previewDisplayName("initial state")
-        NavigationStack {
-            BetterRestView(store: BetterRestDomain.previewStoreAlertState)
-        }
-        .previewDisplayName("alert state")
     }
 }
