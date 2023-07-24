@@ -23,20 +23,25 @@ public struct BetterRestDomain: ReducerDomain {
         //MARK: - init(_:)
         public init(
             sleepAmount: Double = 8,
-            wakeUp: Date = .init(),
             coffeeAmount: Int = .init(),
-            coffeeCupsTitle: String = .init(),
             alertTitle: String = .init(),
             alertMessage: String = .init(),
             isAlertShown: Bool = false
         ) {
             self.sleepAmount = sleepAmount
-            self.wakeUp = wakeUp
             self.coffeeAmount = coffeeAmount
-            self.coffeeCupsTitle = coffeeCupsTitle
             self.alertTitle = alertTitle
             self.alertMessage = alertMessage
             self.isAlertShown = isAlertShown
+            
+            var components = DateComponents()
+            components.hour = 7
+            components.minute = 0
+            
+            let defaultWakeTime = Calendar.current.date(from: components)
+            
+            self.wakeUp = defaultWakeTime ?? .now
+            self.coffeeCupsTitle = coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups"
         }
     }
     
@@ -104,6 +109,10 @@ public struct BetterRestDomain: ReducerDomain {
     //MARK: - Preview Store
     static let previewStore = Store(
         state: Self.State(),
+        reducer: Self())
+    
+    static let previewStoreAlertState = Store(
+        state: Self.State(alertTitle: "Your ideal bedtime is…", alertMessage: "8:00 pm", isAlertShown: true),
         reducer: Self())
 }
 
