@@ -29,8 +29,6 @@ struct GamesTab: View {
     }
 }
 
-struct GamesTab_Previews: PreviewProvider {
-    static var previews: some View {
-        GamesTab()
-    }
+#Preview {
+    GamesTab()
 }

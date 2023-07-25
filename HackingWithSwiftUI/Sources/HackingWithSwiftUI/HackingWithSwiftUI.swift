@@ -3,7 +3,7 @@ import SwiftUDF
 import WeSplit
 import GuessTheFlag
 
-public struct HackingWithSwiftUIMatathon: View {
+public struct HackingWithSwiftUIMarathon: View {
     
     public var body: some View {
         TabView {
@@ -17,8 +17,6 @@ public struct HackingWithSwiftUIMatathon: View {
     public init() {}
 }
 
-struct HackingWithSwiftUIMatathon_Previews: PreviewProvider {
-    static var previews: some View {
-        HackingWithSwiftUIMatathon()
-    }
+#Preview {
+    HackingWithSwiftUIMarathon()
 }

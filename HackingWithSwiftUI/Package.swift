@@ -5,6 +5,7 @@ import PackageDescription
 
 fileprivate let SwiftUDF: Target.Dependency = "SwiftUDF"
 fileprivate let SharedContent: Target.Dependency = "Shared"
+fileprivate let AppDependencies: Target.Dependency = "AppDependencies"
 
 let package = Package(
     name: "HackingWithSwiftUI",
@@ -19,12 +20,19 @@ let package = Package(
         .library(name: "Shared", targets: ["Shared"]),
         .library(name: "RockPaperScissors", targets: ["RockPaperScissors"]),
         .library(name: "BetterRest", targets: ["BetterRest"]),
+        .library(name: "WordScramble", targets: ["WordScramble"]),
+        .library(name: "AppDependencies", targets: ["AppDependencies"]),
     ],
     dependencies: [
     ],
     targets: [
         .target(name: "SwiftUDF"),
         .target(name: "Shared"),
+        .target(
+            name: "AppDependencies",
+            resources: [
+                .process("Resources")
+            ]),
         .target(
             name: "HackingWithSwiftUI",
             dependencies: [
@@ -66,12 +74,19 @@ let package = Package(
             resources: [
                 .process("Resources"),
             ]),
+        .target(
+            name: "WordScramble",
+            dependencies: [
+                SwiftUDF,
+                AppDependencies,
+            ]),
         .testTarget(
             name: "AppTests",
             dependencies: [
                 "UnitConversions",
                 "RockPaperScissors",
-                "BetterRest"
+                "BetterRest",
+                "WordScramble",
             ]),
     ]
 )

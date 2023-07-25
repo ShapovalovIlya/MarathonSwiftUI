@@ -13,7 +13,7 @@ struct MarathonSwiftUIApp: App {
     
     var body: some Scene {
         WindowGroup {
-            HackingWithSwiftUIMatathon()
+            HackingWithSwiftUIMarathon()
         }
     }
 }
