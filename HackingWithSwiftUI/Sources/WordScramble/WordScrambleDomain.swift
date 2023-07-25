@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import SwiftUDF
+import AppDependencies
 
 public struct WordScrambleDomain: ReducerDomain {
     //MARK: - State
@@ -29,16 +30,45 @@ public struct WordScrambleDomain: ReducerDomain {
     
     //MARK: - Action
     public enum Action: Equatable {
+        case startGame
+        case loadWordsRequest
+        case loadWordsResponse(Result<[String], Error>)
         case setNewWord(String)
         case addNewWord
+        
+        public static func == (lhs: WordScrambleDomain.Action, rhs: WordScrambleDomain.Action) -> Bool {
+            String(describing: lhs) == String(describing: rhs)
+        }
     }
     
+    //MARK: - Dependencies
+    private var loadWords: () -> AnyPublisher<[String], Error>
+    
     //MARK: - init(_:)
-    public init() {}
+    public init(
+        loadWords: @escaping () -> AnyPublisher<[String], Error> = FileManager.loadResources
+    ) {
+        self.loadWords = loadWords
+    }
     
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
+        case .startGame:
+            return Just(.loadWordsRequest).eraseToAnyPublisher()
+            
+        case .loadWordsRequest:
+            return loadWords()
+                .map(transformToSuccessAction)
+                .catch(catchToFailureAction)
+                .eraseToAnyPublisher()
+            
+        case let .loadWordsResponse(.success(words)):
+            state.rootWord = words.randomElement() ?? "silkworm"
+            
+        case let .loadWordsResponse(.failure(error)):
+            print(error)
+            
         case let .setNewWord(newWord):
             state.newWord = newWord
             
@@ -59,4 +89,12 @@ public struct WordScrambleDomain: ReducerDomain {
         reducer: Self())
 }
 
-private extension WordScrambleDomain {}
+private extension WordScrambleDomain {
+    func transformToSuccessAction(_ words: [String]) -> Action {
+        .loadWordsResponse(.success(words))
+    }
+    
+    func catchToFailureAction(_ error: Error) -> Just<Action> {
+        .init(.loadWordsResponse(.failure(error)))
+    }
+}

@@ -9,10 +9,10 @@ import Foundation
 import Combine
 
 public struct FileManager {
-    public static func loadResources() -> AnyPublisher<[String], Never> {
+    public static func loadResources() -> AnyPublisher<[String], Error> {
         Bundle.module.url(forResource: "start", withExtension: "txt")
             .publisher
-            .map(String.init)
+            .tryMap(String.init(contentsOf:))
             .map({ $0.components(separatedBy: "\n") })
             .eraseToAnyPublisher()
     }

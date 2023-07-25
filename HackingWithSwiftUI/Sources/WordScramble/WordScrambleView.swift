@@ -20,16 +20,17 @@ public struct WordScrambleView: View {
                         get: { store.newWord },
                         set: { store.send(.setNewWord($0)) })
                 )
+                .textInputAutocapitalization(.never)
+                .onSubmit { store.send(.addNewWord) }
             }
             
             Section {
-                ForEach(store.usedWords, id: \.self) { word in
-                    Text(word)
-                }
+                ForEach(store.usedWords, id: \.self, content: WordRow.init)
             }
         }
         .navigationTitle(store.rootWord)
         .listStyle(.grouped)
+        .onAppear{ store.send(.startGame) }
     }
     
     public init(store: StoreOf<WordScrambleDomain>) {

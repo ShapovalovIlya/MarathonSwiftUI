@@ -7,6 +7,7 @@
 
 import XCTest
 import WordScramble
+import Combine
 
 final class WordScrambleDomainTests: XCTestCase {
     private var sut: WordScrambleDomain!
@@ -54,5 +55,29 @@ final class WordScrambleDomainTests: XCTestCase {
         XCTAssertEqual(state.usedWords.first, "bar")
         XCTAssertEqual(state.newWord, "  ")
     }
+    
+    func test_startGameEmitLoadWordsRequest() {
+        _ = sut.reduce(&state, action: .startGame)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .loadWordsRequest)
+            })
+        
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_loadWordRequestActionEndWithSuccess() {
+        sut = .init(loadWords: {
+            Just(["Baz"])
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        })
+    }
+    
+//    func test_reduceLoadWordsResponce() {
+//        _ = sut.reduce(&state, action: .loadWordsResponse(["baz"]))
+//        
+//        XCTAssertEqual(state.rootWord, "baz")
+//    }
 
 }
