@@ -243,5 +243,14 @@ final class WordScrambleDomainTests: XCTestCase {
         
         XCTAssertTrue(state.rootWord.isEmpty)
     }
+    
+    func test_increaseUserScore() {
+        let testWord = "Baz"
+        state.userScore = 0
+        
+        _ = sut.reduce(&state, action: .addNewWordResult(.success(testWord)))
+        
+        XCTAssertEqual(state.userScore, testWord.count)
+    }
 
 }

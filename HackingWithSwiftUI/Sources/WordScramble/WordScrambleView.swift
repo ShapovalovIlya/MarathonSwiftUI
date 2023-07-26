@@ -13,6 +13,10 @@ public struct WordScrambleView: View {
     
     public var body: some View {
         List {
+            Section("Score") {
+                Text(store.userScore.description)
+            }
+            
             Section {
                 TextField(
                     "Enter your word",
@@ -21,6 +25,8 @@ public struct WordScrambleView: View {
                         set: { store.send(.setNewWord($0)) })
                 )
                 .textInputAutocapitalization(.never)
+                .keyboardType(.alphabet)
+                .autocorrectionDisabled()
                 .onSubmit { store.send(.addNewWord) }
             }
             

@@ -16,6 +16,7 @@ public struct WordScrambleDomain: ReducerDomain {
         public var usedWords: [String]
         public var rootWord: String
         public var newWord: String
+        public var userScore: Int
         public var errorTitle: String
         public var errorMessage: String
         public var showError: Bool
@@ -24,6 +25,7 @@ public struct WordScrambleDomain: ReducerDomain {
             usedWords: [String] = .init(),
             rootWord: String = .init(),
             newWord: String = .init(),
+            userScore: Int = .init(),
             errorTitle: String = .init(),
             errorMessage: String = .init(),
             showError: Bool = false
@@ -31,6 +33,7 @@ public struct WordScrambleDomain: ReducerDomain {
             self.usedWords = usedWords
             self.rootWord = rootWord
             self.newWord = newWord
+            self.userScore = userScore
             self.errorTitle = errorTitle
             self.errorMessage = errorMessage
             self.showError = showError
@@ -103,6 +106,7 @@ public struct WordScrambleDomain: ReducerDomain {
                 .eraseToAnyPublisher()
                       
         case let .addNewWordResult(.success(newWord)):
+            state.userScore += newWord.count
             state.usedWords.insert(newWord, at: 0)
             state.newWord.removeAll(keepingCapacity: true)
             
