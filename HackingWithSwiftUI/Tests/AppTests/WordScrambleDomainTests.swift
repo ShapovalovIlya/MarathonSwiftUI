@@ -61,8 +61,6 @@ final class WordScrambleDomainTests: XCTestCase {
             })
         
         wait(for: [expectation], timeout: 0.1)
-//        XCTAssertEqual(state.usedWords.first, "bar")
-//        XCTAssertEqual(state.newWord, "  ")
     }
     
     func test_addNewWordEmitErrorNotOriginal() {
@@ -103,6 +101,81 @@ final class WordScrambleDomainTests: XCTestCase {
             })
         
         wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_reduceAddNewWordSuccessResult() {
+        state.newWord = "baz"
+        state.usedWords = []
+        
+        _ = sut.reduce(&state, action: .addNewWordResult(.success("baz")))
+        
+        XCTAssertTrue(state.newWord.isEmpty)
+        XCTAssertTrue(state.usedWords.contains("baz"))
+        XCTAssertFalse(state.showError)
+    }
+    
+    func test_reduceAddNewWordFailureResultInappropriate() {
+        _ = sut.reduce(&state, action: .addNewWordResult(.failure(.inappropriate)))
+        
+        XCTAssertEqual(
+            state.errorTitle,
+            WordScrambleDomain.WordError.inappropriate.title
+        )
+        XCTAssertEqual(
+            state.errorMessage,
+            WordScrambleDomain.WordError.inappropriate.message
+        )
+        XCTAssertTrue(state.showError)
+    }
+    
+    func test_reduceAddNewWordFailureResultNotOriginal() {
+        _ = sut.reduce(&state, action: .addNewWordResult(.failure(.notOriginal)))
+        
+        XCTAssertEqual(
+            state.errorTitle,
+            WordScrambleDomain.WordError.notOriginal.title
+        )
+        XCTAssertEqual(
+            state.errorMessage,
+            WordScrambleDomain.WordError.notOriginal.message
+        )
+        XCTAssertTrue(state.showError)
+    }
+    
+    func test_reduceAddNewWordFailureResultNotPossible() {
+        _ = sut.reduce(&state, action: .addNewWordResult(.failure(.notPossible)))
+        
+        XCTAssertEqual(
+            state.errorTitle,
+            WordScrambleDomain.WordError.notPossible.title
+        )
+        XCTAssertEqual(
+            state.errorMessage,
+            WordScrambleDomain.WordError.notPossible.message
+        )
+        XCTAssertTrue(state.showError)
+    }
+    
+    func test_reduceAddNewWordFailureResultNotReal() {
+        _ = sut.reduce(&state, action: .addNewWordResult(.failure(.notReal)))
+        
+        XCTAssertEqual(
+            state.errorTitle,
+            WordScrambleDomain.WordError.notReal.title
+        )
+        XCTAssertEqual(
+            state.errorMessage,
+            WordScrambleDomain.WordError.notReal.message
+        )
+        XCTAssertTrue(state.showError)
+    }
+    
+    func test_reduceDismissAlertAction() {
+        state.showError = true
+        
+        _ = sut.reduce(&state, action: .dismissAlert)
+        
+        XCTAssertFalse(state.showError)
     }
     
     func test_startGameEmitLoadWordsRequest() {

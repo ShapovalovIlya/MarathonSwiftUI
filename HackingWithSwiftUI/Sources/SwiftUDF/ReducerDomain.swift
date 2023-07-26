@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  ReducerDomain.swift
+//  SwiftUDF
 //
 //  Created by User on 18.07.2023.
 //

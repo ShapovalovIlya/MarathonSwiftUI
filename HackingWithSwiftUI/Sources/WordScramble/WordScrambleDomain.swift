@@ -16,15 +16,24 @@ public struct WordScrambleDomain: ReducerDomain {
         public var usedWords: [String]
         public var rootWord: String
         public var newWord: String
+        public var errorTitle: String
+        public var errorMessage: String
+        public var showError: Bool
         
         public init(
             usedWords: [String] = .init(),
             rootWord: String = .init(),
-            newWord: String = .init()
+            newWord: String = .init(),
+            errorTitle: String = .init(),
+            errorMessage: String = .init(),
+            showError: Bool = false
         ) {
             self.usedWords = usedWords
             self.rootWord = rootWord
             self.newWord = newWord
+            self.errorTitle = errorTitle
+            self.errorMessage = errorMessage
+            self.showError = showError
         }
     }
     
@@ -36,6 +45,7 @@ public struct WordScrambleDomain: ReducerDomain {
         case setNewWord(String)
         case addNewWord
         case addNewWordResult(Result<String, WordError>)
+        case dismissAlert
         
         public static func == (lhs: WordScrambleDomain.Action, rhs: WordScrambleDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
@@ -49,7 +59,7 @@ public struct WordScrambleDomain: ReducerDomain {
         case notReal
         case inappropriate
         
-        var title: String {
+        public var title: String {
             switch self {
             case .notOriginal: return "Word used already"
             case .notPossible: return "Word not possible"
@@ -58,7 +68,7 @@ public struct WordScrambleDomain: ReducerDomain {
             }
         }
         
-        var message: String {
+        public var message: String {
             switch self {
             case .notOriginal: return "Be more original"
             case .notPossible: return "You can't spell that word from 'rootWord'!"
@@ -104,15 +114,16 @@ public struct WordScrambleDomain: ReducerDomain {
             
         case .addNewWord:
             return check(state.newWord, in: state)
-            
-//            state.usedWords.insert(state.newWord, at: 0)
-//            state.newWord.removeAll(keepingCapacity: true)
-//            
+                       
         case let .addNewWordResult(.success(newWord)):
-            break
+            state.usedWords.insert(newWord, at: 0)
+            state.newWord.removeAll(keepingCapacity: true)
             
         case let .addNewWordResult(.failure(error)):
-            break
+            reduce(&state, with: error)
+            
+        case .dismissAlert:
+            state.showError = false
             
         }
         return Empty().eraseToAnyPublisher()
@@ -171,5 +182,11 @@ private extension WordScrambleDomain {
         }
         
         return Just(.addNewWordResult(.success(newWord))).eraseToAnyPublisher()
+    }
+    
+    func reduce(_ state: inout State, with error: WordError) {
+        state.errorTitle = error.title
+        state.errorMessage = error.message
+        state.showError = true
     }
 }
