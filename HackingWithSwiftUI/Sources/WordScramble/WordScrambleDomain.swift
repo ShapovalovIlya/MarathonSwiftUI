@@ -52,32 +52,6 @@ public struct WordScrambleDomain: ReducerDomain {
         }
     }
     
-    //MARK: - Word Error
-    public enum WordError: Error, Equatable, LocalizedError {
-        case notOriginal
-        case notPossible
-        case notReal
-        case inappropriate
-        
-        public var title: String {
-            switch self {
-            case .notOriginal: return "Word used already"
-            case .notPossible: return "Word not possible"
-            case .notReal: return "Word not recognized"
-            case .inappropriate: return "Word is inappropriate"
-            }
-        }
-        
-        public var message: String {
-            switch self {
-            case .notOriginal: return "Be more original"
-            case .notPossible: return "You can't spell that word from 'rootWord'!"
-            case .notReal: return "You can't just make them up, you know!"
-            case .inappropriate: return "You should use letters"
-            }
-        }
-    }
-    
     //MARK: - Dependencies
     private var loadWords: () -> AnyPublisher<[String], Error>
     private var isReal: (String) -> Bool
@@ -113,8 +87,21 @@ public struct WordScrambleDomain: ReducerDomain {
             state.newWord = newWord
             
         case .addNewWord:
-            return check(state.newWord, in: state)
-                       
+            let newWord = state.newWord
+                .lowercased()
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            return Just(newWord)
+                .tryMap(checkAppropriate)
+                .tryMap{ try check($0, equalsTo: state.rootWord) }
+                .tryMap{ try checkOriginal($0, in: state.usedWords) }
+                .tryMap{ try checkIsPossible($0, in: state.rootWord) }
+                .tryMap(checkIsReal)
+                .map(transformToAddWordSuccessAction)
+                .mapError(WordError.map)
+                .catch(catchToAddWordFailureAction)
+                .eraseToAnyPublisher()
+                      
         case let .addNewWordResult(.success(newWord)):
             state.usedWords.insert(newWord, at: 0)
             state.newWord.removeAll(keepingCapacity: true)
@@ -153,19 +140,70 @@ public struct WordScrambleDomain: ReducerDomain {
         reducer: Self())
 }
 
+//MARK: - Transformers
 private extension WordScrambleDomain {
     func transformToSuccessAction(_ words: [String]) -> Action {
         .loadWordsResponse(.success(words))
     }
     
+    func transformToAddWordSuccessAction(_ newWord: String) -> Action {
+        .addNewWordResult(.success(newWord))
+    }
+}
+
+//MARK: - Catchers
+private extension WordScrambleDomain {
     func catchToFailureAction(_ error: Error) -> Just<Action> {
-        .init(.loadWordsResponse(.failure(error)))
+        Just(.loadWordsResponse(.failure(error)))
     }
     
-    func isOriginal(_ word: String, in collection: [String]) -> Bool {
-        !collection.contains(word)
+    func catchToAddWordFailureAction(_ error: WordError) -> Just<Action> {
+        Just(.addNewWordResult(.failure(error)))
+    }
+}
+
+//MARK: - Checkers
+private extension WordScrambleDomain {
+    func checkAppropriate(_ newWord: String) throws -> String {
+        guard !newWord.isEmpty,
+              newWord.count > 2
+        else {
+            throw WordError.inappropriate
+        }
+        return newWord
     }
     
+    func checkOriginal(_ newWord: String, in collection: [String]) throws -> String {
+        guard !collection.contains(newWord) else {
+            throw WordError.notOriginal
+        }
+        return newWord
+    }
+    
+    func checkIsPossible(_ newWord: String, in rootWord: String) throws -> String {
+        guard isPossible(newWord, in: rootWord) else {
+            throw WordError.notPossible
+        }
+        return newWord
+    }
+    
+    func checkIsReal(_ newWord: String) throws -> String {
+        guard isReal(newWord) else {
+            throw WordError.notReal
+        }
+        return newWord
+    }
+    
+    func check(_ newWord: String, equalsTo rootWord: String) throws -> String {
+        guard newWord != rootWord else {
+            throw WordError.equalsToRootWord
+        }
+        return newWord
+    }
+}
+
+//MARK: - Helpers
+private extension WordScrambleDomain {
     func isPossible(_ word: String, in rootWord: String) -> Bool {
         var tempWord = rootWord
         
@@ -178,33 +216,57 @@ private extension WordScrambleDomain {
         return true
     }
     
-    func check(_ newWord: String, in state: State) -> AnyPublisher<Action, Never> {
-        let newWord = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        guard !newWord.isEmpty else {
-            return Just(.addNewWordResult(.failure(.inappropriate))).eraseToAnyPublisher()
-        }
-        
-        guard isOriginal(newWord, in: state.usedWords) else {
-            return Just(.addNewWordResult(.failure(.notOriginal)))
-                .eraseToAnyPublisher()
-        }
-        
-        guard isPossible(newWord, in: state.rootWord) else {
-            return Just(.addNewWordResult(.failure(.notPossible)))
-                .eraseToAnyPublisher()
-        }
-        
-        guard isReal(newWord) else {
-            return Just(.addNewWordResult(.failure(.notReal))).eraseToAnyPublisher()
-        }
-        
-        return Just(.addNewWordResult(.success(newWord))).eraseToAnyPublisher()
-    }
-    
     func reduce(_ state: inout State, with error: WordError) {
         state.errorTitle = error.title
         state.errorMessage = error.message
         state.showError = true
+    }
+}
+
+extension WordScrambleDomain {
+    //MARK: - Word Error
+    public enum WordError: Error, Equatable, LocalizedError {
+        case notOriginal
+        case notPossible
+        case notReal
+        case inappropriate
+        case equalsToRootWord
+        case other(Error)
+        
+        public var title: String {
+            switch self {
+            case .notOriginal: return "Word used already"
+            case .notPossible: return "Word not possible"
+            case .notReal: return "Word not recognized"
+            case .inappropriate: return "Word is inappropriate"
+            case .equalsToRootWord: return "This is a root word"
+            case .other: return "Unknown error."
+            }
+        }
+        
+        public var message: String {
+            switch self {
+            case .notOriginal: return "Be more original"
+            case .notPossible: return "You can't spell that word from 'root word'!"
+            case .notReal: return "You can't just make them up, you know!"
+            case .inappropriate: return "You should use letters"
+            case .equalsToRootWord: return "You can't use root word!"
+            case let .other(error): return error.localizedDescription
+            }
+        }
+        
+        static func map(_ error: Error) -> WordError {
+            error as? WordError ?? .other(error)
+        }
+        
+        public static func == (lhs: WordScrambleDomain.WordError, rhs: WordScrambleDomain.WordError) -> Bool {
+            guard
+                lhs.title == rhs.title,
+                lhs.message == rhs.message
+            else {
+                return false
+            }
+            return true
+        }
     }
 }

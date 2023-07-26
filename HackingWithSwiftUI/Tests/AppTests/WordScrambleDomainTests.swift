@@ -37,7 +37,7 @@ final class WordScrambleDomainTests: XCTestCase {
     }
     
     func test_addNewWordEndWithSuccess() {
-        state.rootWord = "baz"
+        state.rootWord = "bazilisk"
         state.newWord = " Baz "
         state.usedWords = ["bar"]
         
@@ -91,13 +91,26 @@ final class WordScrambleDomainTests: XCTestCase {
     
     func test_addNewWordEmitErrorNotReal() {
         sut = .init(isReal: { _ in false })
-        state.rootWord = "baz"
+        state.rootWord = "bazilisk"
         state.newWord = "baz"
         
         _ = sut.reduce(&state, action: .addNewWord)
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .addNewWordResult(.failure(.notReal)))
+            })
+        
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_addNewWordEmitErrorEqualsToRootWord() {
+        state.rootWord = "baz"
+        state.newWord = "baz"
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .addNewWordResult(.failure(.equalsToRootWord)))
             })
         
         wait(for: [expectation], timeout: 0.1)
