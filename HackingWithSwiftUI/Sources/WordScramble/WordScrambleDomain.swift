@@ -129,9 +129,27 @@ public struct WordScrambleDomain: ReducerDomain {
         return Empty().eraseToAnyPublisher()
     }
     
-    //MARK: - Preview Store
-    public static let previewStore = Store(
+    //MARK: - Live Store
+    public static let liveStore = Store(
         state: Self.State(),
+        reducer: Self())
+    
+    //MARK: - Preview Stores
+    static let previewStore = Store(
+        state: Self.State(),
+        reducer: Self(loadWords: {
+            Just(["Testword"])
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        })
+    )
+    
+    static let previewStoreAlertState = Store(
+        state: Self.State(
+            errorTitle: WordError.notOriginal.title,
+            errorMessage: WordError.notOriginal.message,
+            showError: true
+        ),
         reducer: Self())
 }
 

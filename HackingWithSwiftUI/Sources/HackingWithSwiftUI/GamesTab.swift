@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftUDF
 import GuessTheFlag
 import RockPaperScissors
+import WordScramble
 
 struct GamesTab: View {
    
@@ -21,6 +22,9 @@ struct GamesTab: View {
                     }
                     NavigationLink("Rock-Paper-Scissors") {
                         RockPaperScissorsContentView(store: RockPaperScissorsDomain.previewStore)
+                    }
+                    NavigationLink("Word scramble") {
+                        WordScrambleView(store: WordScrambleDomain.liveStore)
                     }
                 }
             }

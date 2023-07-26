@@ -31,6 +31,19 @@ public struct WordScrambleView: View {
         .navigationTitle(store.rootWord)
         .listStyle(.grouped)
         .onAppear{ store.send(.startGame) }
+        .toolbar {
+            Button("New word") { store.send(.startGame) }
+        }
+        .alert(
+            store.errorTitle,
+            isPresented: Binding(
+                get: { store.showError },
+                set: { _ in store.send(.dismissAlert) })
+        ) {
+            Button("Ok", role: .cancel, action: {})
+        } message: {
+            Text(store.errorMessage)
+        }
     }
     
     public init(store: StoreOf<WordScrambleDomain>) {
@@ -42,5 +55,11 @@ public struct WordScrambleView: View {
 #Preview("Common state") {
     NavigationStack {
         WordScrambleView(store: WordScrambleDomain.previewStore)
+    }
+}
+
+#Preview("Alert state") {
+    NavigationStack {
+        WordScrambleView(store: WordScrambleDomain.previewStoreAlertState)
     }
 }
