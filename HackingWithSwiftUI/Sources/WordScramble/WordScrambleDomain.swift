@@ -35,9 +35,36 @@ public struct WordScrambleDomain: ReducerDomain {
         case loadWordsResponse(Result<[String], Error>)
         case setNewWord(String)
         case addNewWord
+        case addNewWordResult(Result<String, WordError>)
         
         public static func == (lhs: WordScrambleDomain.Action, rhs: WordScrambleDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
+        }
+    }
+    
+    //MARK: - Word Error
+    public enum WordError: Error, Equatable, LocalizedError {
+        case notOriginal
+        case notPossible
+        case notReal
+        case inappropriate
+        
+        var title: String {
+            switch self {
+            case .notOriginal: return "Word used already"
+            case .notPossible: return "Word not possible"
+            case .notReal: return "Word not recognized"
+            case .inappropriate: return "Word is inappropriate"
+            }
+        }
+        
+        var message: String {
+            switch self {
+            case .notOriginal: return "Be more original"
+            case .notPossible: return "You can't spell that word from 'rootWord'!"
+            case .notReal: return "You can't just make them up, you know!"
+            case .inappropriate: return "You should use letters"
+            }
         }
     }
     
@@ -76,17 +103,17 @@ public struct WordScrambleDomain: ReducerDomain {
             state.newWord = newWord
             
         case .addNewWord:
-            let answer = state.newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-            guard
-                !answer.isEmpty,
-                isOrigin(answer, in: state.usedWords),
-                isPossible(answer, in: state.rootWord),
-                isReal(answer)
-            else {
-                break
-            }
-            state.usedWords.insert(answer, at: 0)
-            state.newWord.removeAll(keepingCapacity: true)
+            return check(state.newWord, in: state)
+            
+//            state.usedWords.insert(state.newWord, at: 0)
+//            state.newWord.removeAll(keepingCapacity: true)
+//            
+        case let .addNewWordResult(.success(newWord)):
+            break
+            
+        case let .addNewWordResult(.failure(error)):
+            break
+            
         }
         return Empty().eraseToAnyPublisher()
     }
@@ -106,7 +133,7 @@ private extension WordScrambleDomain {
         .init(.loadWordsResponse(.failure(error)))
     }
     
-    func isOrigin(_ word: String, in collection: [String]) -> Bool {
+    func isOriginal(_ word: String, in collection: [String]) -> Bool {
         !collection.contains(word)
     }
     
@@ -120,5 +147,29 @@ private extension WordScrambleDomain {
             tempWord.remove(at: possible)
         }
         return true
+    }
+    
+    func check(_ newWord: String, in state: State) -> AnyPublisher<Action, Never> {
+        let newWord = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !newWord.isEmpty else {
+            return Just(.addNewWordResult(.failure(.inappropriate))).eraseToAnyPublisher()
+        }
+        
+        guard isOriginal(newWord, in: state.usedWords) else {
+            return Just(.addNewWordResult(.failure(.notOriginal)))
+                .eraseToAnyPublisher()
+        }
+        
+        guard isPossible(newWord, in: state.rootWord) else {
+            return Just(.addNewWordResult(.failure(.notPossible)))
+                .eraseToAnyPublisher()
+        }
+        
+        guard isReal(newWord) else {
+            return Just(.addNewWordResult(.failure(.notReal))).eraseToAnyPublisher()
+        }
+        
+        return Just(.addNewWordResult(.success(newWord))).eraseToAnyPublisher()
     }
 }

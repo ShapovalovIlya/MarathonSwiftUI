@@ -36,82 +36,73 @@ final class WordScrambleDomainTests: XCTestCase {
         XCTAssertEqual(state.newWord, "Baz")
     }
     
-    func test_addNewWordToUsedWords() {
+    func test_addNewWordEndWithSuccess() {
         state.rootWord = "baz"
         state.newWord = " Baz "
         state.usedWords = ["bar"]
         
         _ = sut.reduce(&state, action: .addNewWord)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .addNewWordResult(.success("baz")))
+            })
         
-        XCTAssertEqual(state.usedWords.first, "baz")
-        XCTAssertTrue(state.newWord.isEmpty)
+        wait(for: [expectation], timeout: 0.1)
     }
     
-    func test_addNewInappropriateWord() {
+    func test_addNewWordEmitInappropriateError() {
         state.newWord = "  "
         state.usedWords = ["bar"]
         
         _ = sut.reduce(&state, action: .addNewWord)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .addNewWordResult(.failure(.inappropriate)))
+            })
         
-        XCTAssertEqual(state.usedWords.first, "bar")
-        XCTAssertEqual(state.newWord, "  ")
+        wait(for: [expectation], timeout: 0.1)
+//        XCTAssertEqual(state.usedWords.first, "bar")
+//        XCTAssertEqual(state.newWord, "  ")
     }
     
-    func test_addNewWordDoesNotOrigin() {
+    func test_addNewWordEmitErrorNotOriginal() {
         state.newWord = "Baz"
         state.usedWords = ["baz"]
         
         _ = sut.reduce(&state, action: .addNewWord)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .addNewWordResult(.failure(.notOriginal)))
+            })
         
-        XCTAssertEqual(state.usedWords, ["baz"])
+        wait(for: [expectation], timeout: 0.1)
     }
     
-    func test_addNewWordIsOrigin() {
-        state.rootWord = "bar"
-        state.newWord = "Bar"
-        state.usedWords = ["baz"]
-        
-        _ = sut.reduce(&state, action: .addNewWord)
-        
-        XCTAssertEqual(state.usedWords, ["bar","baz"])
-    }
-    
-    func test_addNewWordIsPossible() {
-        state.rootWord = "baz"
-        state.newWord = "ba"
-        
-        _ = sut.reduce(&state, action: .addNewWord)
-        
-        XCTAssertEqual(state.usedWords, ["ba"])
-    }
-    
-    func test_addNewWordIsNotPossible() {
+    func test_addNewWordEmitErrorNotPossible() {
         state.rootWord = "baz"
         state.newWord = "foo"
         
         _ = sut.reduce(&state, action: .addNewWord)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .addNewWordResult(.failure(.notPossible)))
+            })
         
-        XCTAssertTrue(state.usedWords.isEmpty)
+        wait(for: [expectation], timeout: 0.1)
     }
     
-    func test_addNewWordIsNotReal() {
+    func test_addNewWordEmitErrorNotReal() {
         sut = .init(isReal: { _ in false })
         state.rootWord = "baz"
         state.newWord = "baz"
         
         _ = sut.reduce(&state, action: .addNewWord)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .addNewWordResult(.failure(.notReal)))
+            })
         
-        XCTAssertTrue(state.usedWords.isEmpty)
-    }
-    
-    func test_addNewWordIsReal() {
-        sut = .init(isReal: { _ in true })
-        state.rootWord = "baz"
-        state.newWord = "baz"
-        
-        _ = sut.reduce(&state, action: .addNewWord)
-        
-        XCTAssertEqual(state.usedWords, ["baz"])
+        wait(for: [expectation], timeout: 0.1)
     }
     
     func test_startGameEmitLoadWordsRequest() {
