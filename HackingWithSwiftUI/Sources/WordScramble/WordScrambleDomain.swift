@@ -43,12 +43,15 @@ public struct WordScrambleDomain: ReducerDomain {
     
     //MARK: - Dependencies
     private var loadWords: () -> AnyPublisher<[String], Error>
+    private var isReal: (String) -> Bool
     
     //MARK: - init(_:)
     public init(
-        loadWords: @escaping () -> AnyPublisher<[String], Error> = FileManager.loadResources
+        loadWords: @escaping () -> AnyPublisher<[String], Error> = FileManager.loadResources,
+        isReal: @escaping (String) -> Bool = TextChecker.isReal
     ) {
         self.loadWords = loadWords
+        self.isReal = isReal
     }
     
     //MARK: - Reducer
@@ -74,7 +77,12 @@ public struct WordScrambleDomain: ReducerDomain {
             
         case .addNewWord:
             let answer = state.newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !answer.isEmpty else {
+            guard
+                !answer.isEmpty,
+                isOrigin(answer, in: state.usedWords),
+                isPossible(answer, in: state.rootWord),
+                isReal(answer)
+            else {
                 break
             }
             state.usedWords.insert(answer, at: 0)
@@ -96,5 +104,21 @@ private extension WordScrambleDomain {
     
     func catchToFailureAction(_ error: Error) -> Just<Action> {
         .init(.loadWordsResponse(.failure(error)))
+    }
+    
+    func isOrigin(_ word: String, in collection: [String]) -> Bool {
+        !collection.contains(word)
+    }
+    
+    func isPossible(_ word: String, in rootWord: String) -> Bool {
+        var tempWord = rootWord
+        
+        for letter in word {
+            guard let possible = tempWord.firstIndex(of: letter) else {
+                return false
+            }
+            tempWord.remove(at: possible)
+        }
+        return true
     }
 }

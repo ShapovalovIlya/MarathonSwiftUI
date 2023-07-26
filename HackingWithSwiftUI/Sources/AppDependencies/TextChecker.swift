@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 public struct TextChecker {
-    public static func check(word: String) -> Bool {
+    public static func isReal(_ word: String) -> Bool {
         let checker = UITextChecker()
         let range = NSRange(location: 0, length: word.utf16.count)
         let misspelledRange = checker.rangeOfMisspelledWord(

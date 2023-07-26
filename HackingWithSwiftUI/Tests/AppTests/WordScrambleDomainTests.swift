@@ -17,7 +17,7 @@ final class WordScrambleDomainTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         
-        sut = .init()
+        sut = .init(isReal: { _ in true })
         state = .init()
         expectation = .init(description: "WordScrambleDomainTests")
     }
@@ -37,6 +37,7 @@ final class WordScrambleDomainTests: XCTestCase {
     }
     
     func test_addNewWordToUsedWords() {
+        state.rootWord = "baz"
         state.newWord = " Baz "
         state.usedWords = ["bar"]
         
@@ -56,6 +57,63 @@ final class WordScrambleDomainTests: XCTestCase {
         XCTAssertEqual(state.newWord, "  ")
     }
     
+    func test_addNewWordDoesNotOrigin() {
+        state.newWord = "Baz"
+        state.usedWords = ["baz"]
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+        
+        XCTAssertEqual(state.usedWords, ["baz"])
+    }
+    
+    func test_addNewWordIsOrigin() {
+        state.rootWord = "bar"
+        state.newWord = "Bar"
+        state.usedWords = ["baz"]
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+        
+        XCTAssertEqual(state.usedWords, ["bar","baz"])
+    }
+    
+    func test_addNewWordIsPossible() {
+        state.rootWord = "baz"
+        state.newWord = "ba"
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+        
+        XCTAssertEqual(state.usedWords, ["ba"])
+    }
+    
+    func test_addNewWordIsNotPossible() {
+        state.rootWord = "baz"
+        state.newWord = "foo"
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+        
+        XCTAssertTrue(state.usedWords.isEmpty)
+    }
+    
+    func test_addNewWordIsNotReal() {
+        sut = .init(isReal: { _ in false })
+        state.rootWord = "baz"
+        state.newWord = "baz"
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+        
+        XCTAssertTrue(state.usedWords.isEmpty)
+    }
+    
+    func test_addNewWordIsReal() {
+        sut = .init(isReal: { _ in true })
+        state.rootWord = "baz"
+        state.newWord = "baz"
+        
+        _ = sut.reduce(&state, action: .addNewWord)
+        
+        XCTAssertEqual(state.usedWords, ["baz"])
+    }
+    
     func test_startGameEmitLoadWordsRequest() {
         _ = sut.reduce(&state, action: .startGame)
             .sink(receiveValue: { [unowned self] action in
@@ -67,17 +125,46 @@ final class WordScrambleDomainTests: XCTestCase {
     }
     
     func test_loadWordRequestActionEndWithSuccess() {
+        let testArr = ["Baz"]
         sut = .init(loadWords: {
-            Just(["Baz"])
+            Just(testArr)
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
         })
+        
+        _ = sut.reduce(&state, action: .loadWordsRequest)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .loadWordsResponse(.success(testArr)))
+            })
+        wait(for: [expectation], timeout: 0.1)
     }
     
-//    func test_reduceLoadWordsResponce() {
-//        _ = sut.reduce(&state, action: .loadWordsResponse(["baz"]))
-//        
-//        XCTAssertEqual(state.rootWord, "baz")
-//    }
+    func test_loadWordRequestActionEndWithError() {
+        let testErr: Error = CocoaError(.fileNoSuchFile)
+        sut = .init(loadWords: {
+            Fail(error: testErr)
+                .eraseToAnyPublisher()
+        })
+        
+        _ = sut.reduce(&state, action: .loadWordsRequest)
+            .sink(receiveValue: { [unowned self] action in
+                expectation.fulfill()
+                XCTAssertEqual(action, .loadWordsResponse(.failure(testErr)))
+            })
+        wait(for: [expectation], timeout: 0.1)
+    }
+    
+    func test_reduceSuccessLoadWordRequest() {
+        _ = sut.reduce(&state, action: .loadWordsResponse(.success(["Baz"])))
+        
+        XCTAssertEqual(state.rootWord, "Baz")
+    }
+    
+    func test_reduceFailureLoadWordRequest() {
+        _ = sut.reduce(&state, action: .loadWordsResponse(.failure(URLError(.badURL))))
+        
+        XCTAssertTrue(state.rootWord.isEmpty)
+    }
 
 }
