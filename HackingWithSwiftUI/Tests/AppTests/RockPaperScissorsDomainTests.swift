@@ -65,104 +65,36 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         wait(for: [expectation], timeout: 0.1)
     }
     
-    func test_gameResult_playerWin_MatchExpectation() {
-        state.gameExpectation = .playerWin
-        
-        _ = sut.reduce(&state, action: .playerWin)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .expectationFulfill)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_gameResult_playerWin_DontMatchExpectation() {
+    func test_playRoundEndWithFailingExpectations() {
         state.gameExpectation = .draw
+        state.playerWeapon = .paper
+        state.enemyWeapon = .rock
         
-        _ = sut.reduce(&state, action: .playerWin)
+        _ = sut.reduce(&state, action: .playRound)
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
-                XCTAssertEqual(action, .expectationNotMatch)
+                XCTAssertEqual(action, .expectationResult(false))
             })
         
         wait(for: [expectation], timeout: 0.1)
     }
     
-    func test_gameResult_playerLoose_DontMatchExpectation() {
+    func test_playRoundEndWithExpectationsFulfill() {
         state.gameExpectation = .draw
+        state.playerWeapon = .paper
+        state.enemyWeapon = .paper
         
-        _ = sut.reduce(&state, action: .playerLose)
+        _ = sut.reduce(&state, action: .playRound)
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
-                XCTAssertEqual(action, .expectationNotMatch)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_gameResult_playerLoose_MatchExpectation() {
-        state.gameExpectation = .playerLoose
-        
-        _ = sut.reduce(&state, action: .playerLose)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .expectationFulfill)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_gameResult_draw_DontMatchExpectation() {
-        state.gameExpectation = .playerWin
-        
-        _ = sut.reduce(&state, action: .draw)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .expectationNotMatch)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_gameResult_draw_MatchExpectation() {
-        state.gameExpectation = .draw
-        
-        _ = sut.reduce(&state, action: .draw)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .expectationFulfill)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_gameResultMatchExpectation() {
-        state.gameExpectation = .draw
-        
-        _ = sut.reduce(&state, action: .draw)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .expectationFulfill)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_gameResultDontMatchExpectation() {
-        state.gameExpectation = .playerWin
-        
-        _ = sut.reduce(&state, action: .draw)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .expectationNotMatch)
+                XCTAssertEqual(action, .expectationResult(true))
             })
         
         wait(for: [expectation], timeout: 0.1)
     }
     
     func test_ExpectationFulfillEmitGameResultTrue() {
-        _ = sut.reduce(&state, action: .expectationFulfill)
+        _ = sut.reduce(&state, action: .expectationResult(true))
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .showGameResult(true))
@@ -173,7 +105,7 @@ final class RockPaperScissorsDomainTests: XCTestCase {
     func test_ExpectationFulfillEmitGameOver() {
         state.currentRound = 10
         
-        _ = sut.reduce(&state, action: .expectationFulfill)
+        _ = sut.reduce(&state, action: .expectationResult(true))
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .gameOver)
@@ -183,7 +115,7 @@ final class RockPaperScissorsDomainTests: XCTestCase {
     }
     
     func test_ExpectationNotMatchEmitGameResultFalse() {
-        _ = sut.reduce(&state, action: .expectationNotMatch)
+        _ = sut.reduce(&state, action: .expectationResult(false))
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .showGameResult(false))
@@ -194,7 +126,7 @@ final class RockPaperScissorsDomainTests: XCTestCase {
     func test_ExpectationNotMatchEmitGameOver() {
         state.currentRound = 10
         
-        _ = sut.reduce(&state, action: .expectationNotMatch)
+        _ = sut.reduce(&state, action: .expectationResult(false))
             .sink(receiveValue: { [unowned self] action in
                 expectation.fulfill()
                 XCTAssertEqual(action, .gameOver)
@@ -234,7 +166,7 @@ final class RockPaperScissorsDomainTests: XCTestCase {
     func test_scoreNeverGetBelowZero() {
         state.score = 0
         
-        _ = sut.reduce(&state, action: .expectationNotMatch)
+        _ = sut.reduce(&state, action: .expectationResult(false))
         
         XCTAssertEqual(state.score, 0)
     }
@@ -260,42 +192,4 @@ final class RockPaperScissorsDomainTests: XCTestCase {
         XCTAssertFalse(state.isAlertShown)
     }
     
-    func test_playRoundEmitDrawResult() {
-        state.playerWeapon = .paper
-        state.enemyWeapon = .paper
-        
-        _ = sut.reduce(&state, action: .playRound)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .draw)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_playRoundEmitPlayerWinResult() {
-        state.playerWeapon = .paper
-        state.enemyWeapon = .rock
-        
-        _ = sut.reduce(&state, action: .playRound)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .playerWin)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
-    
-    func test_playRoundEmitPlayerLooseResult() {
-        state.playerWeapon = .paper
-        state.enemyWeapon = .scissors
-        
-        _ = sut.reduce(&state, action: .playRound)
-            .sink(receiveValue: { [unowned self] action in
-                expectation.fulfill()
-                XCTAssertEqual(action, .playerLose)
-            })
-        
-        wait(for: [expectation], timeout: 0.1)
-    }
 }

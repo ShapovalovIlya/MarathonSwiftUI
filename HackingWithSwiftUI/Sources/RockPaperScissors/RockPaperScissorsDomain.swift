@@ -55,11 +55,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         case setupRound
         case playerChooseWeapon(WeaponType)
         case playRound
-        case playerLose
-        case playerWin
-        case draw
-        case expectationFulfill
-        case expectationNotMatch
+        case expectationResult(Bool)
         case showGameResult(Bool)
         case gameOver
         case dismissAlert
@@ -93,22 +89,15 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             return Just(.playRound).eraseToAnyPublisher()
             
         case .playRound:
-            return computeBattleResult(&state)
+            return Just(state)
+                .map(computeBattleResult)
+                .zip(Just(state.gameExpectation))
+                .map(==)
+                .map(Action.expectationResult)
+                .eraseToAnyPublisher()
             
-        case .playerWin:
-            return reduce(state.gameExpectation, withResult: .playerWin)
-            
-        case .playerLose:
-            return reduce(state.gameExpectation, withResult: .playerLoose)
-            
-        case .draw:
-            return reduce(state.gameExpectation, withResult: .draw)
-            
-        case .expectationFulfill:
-            return reduceGameFlow(state, isFulfill: true)
-            
-        case .expectationNotMatch:
-            return reduceGameFlow(state, isFulfill: false)
+        case let .expectationResult(isFulfill):
+            return reduceGameFlow(state, isFulfill: isFulfill)
             
         case let .showGameResult(result):
             reduce(&state, isFulfill: result)
@@ -147,27 +136,17 @@ public struct RockPaperScissorsDomain: ReducerDomain {
 
 //MARK: - Private methods
 private extension RockPaperScissorsDomain {
-    private func computeBattleResult(_ state: inout State) -> AnyPublisher<Action, Never> {
+    func computeBattleResult(_ state: State) -> GameExpectation {
         guard state.playerWeapon != state.enemyWeapon else {
-            return Just(.draw).eraseToAnyPublisher()
+            return .draw
         }
         guard state.playerWeapon.weakness == state.enemyWeapon else {
-            return Just(.playerWin).eraseToAnyPublisher()
+            return .playerWin
         }
-        return Just(.playerLose).eraseToAnyPublisher()
+        return .playerLoose
     }
     
-    private func reduce(
-        _ expectations: GameExpectation,
-        withResult result: GameExpectation
-    ) -> AnyPublisher<Action, Never> {
-        guard expectations == result else {
-            return Just(.expectationNotMatch).eraseToAnyPublisher()
-        }
-        return Just(.expectationFulfill).eraseToAnyPublisher()
-    }
-    
-    private func reduce(_ state: inout State, isFulfill: Bool) {
+    func reduce(_ state: inout State, isFulfill: Bool) {
         switch isFulfill {
         case true:
             state.score += 1
@@ -182,7 +161,7 @@ private extension RockPaperScissorsDomain {
         state.isAlertShown = true
     }
     
-    private func reduceGameFlow(_ state: State, isFulfill: Bool) -> AnyPublisher<Action, Never> {
+    func reduceGameFlow(_ state: State, isFulfill: Bool) -> AnyPublisher<Action, Never> {
         guard state.currentRound < state.maxRoundsCount else {
             return Just(.gameOver).eraseToAnyPublisher()
         }
