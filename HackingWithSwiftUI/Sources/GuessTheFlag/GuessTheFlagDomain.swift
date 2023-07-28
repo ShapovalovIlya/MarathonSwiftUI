@@ -67,7 +67,7 @@ public struct GuessTheFlagDomain: ReducerDomain {
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
         case .askQuestion:
-            guard state.currentNumberOfQuestions != 8 else {
+            guard state.currentNumberOfQuestions <= 8 else {
                 return Just(.showFinalScore).eraseToAnyPublisher()
             }
             state.countries.shuffle()

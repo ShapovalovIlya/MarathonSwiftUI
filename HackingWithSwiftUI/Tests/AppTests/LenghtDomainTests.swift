@@ -47,15 +47,15 @@ final class LenghtDomainTests: XCTestCase {
     }
     
     func test_setInputLenght() {
-        _ = sut.reduce(&state, action: .setInputLenght(1))
+        _ = sut.reduce(&state, action: .setInputLength(1))
         
-        XCTAssertEqual(state.inputLenght, 1.0)
+        XCTAssertEqual(state.inputLength, 1.0)
     }
     
     func test_setInputValueToZero() {
-        _ = sut.reduce(&state, action: .setInputLenght(0))
+        _ = sut.reduce(&state, action: .setInputLength(0))
         
-        XCTAssertEqual(state.resultLenght, "Result value")
+        XCTAssertEqual(state.resultLength, "Result value")
     }
     
     func test_reduceInputTypeEmitAction() {
@@ -79,7 +79,7 @@ final class LenghtDomainTests: XCTestCase {
     }
     
     func test_reduceInputLenght() {
-        _ = sut.reduce(&state, action: .setInputLenght(0))
+        _ = sut.reduce(&state, action: .setInputLength(0))
             .sink(receiveCompletion: { [unowned self] _ in
                 expectation.fulfill()
             }, receiveValue: { action in
@@ -91,160 +91,160 @@ final class LenghtDomainTests: XCTestCase {
     func test_reduceMetersToKilometers() {
         state.inputValueType = .meters
         state.outputValueType = .kilometers
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "0.001")
+        XCTAssertEqual(state.resultLength, "0.001")
     }
     
     func test_reduceMetersToFeet() {
         state.inputValueType = .meters
         state.outputValueType = .feet
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "3.281")
+        XCTAssertEqual(state.resultLength, "3.281")
     }
     
     func test_reduceMetersToMiles() {
         state.inputValueType = .meters
         state.outputValueType = .miles
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "0.001")
+        XCTAssertEqual(state.resultLength, "0.001")
     }
     
     func test_reduceMetersToYards() {
         state.inputValueType = .meters
         state.outputValueType = .yards
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "1.094")
+        XCTAssertEqual(state.resultLength, "1.094")
     }
     
     func test_reduceKilometersToMeters() {
         state.inputValueType = .kilometers
         state.outputValueType = .meters
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "1,000")
+        XCTAssertEqual(state.resultLength, "1,000")
     }
     
     func test_reduceKilometersToFeet() {
         state.inputValueType = .kilometers
         state.outputValueType = .feet
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "3,280.84")
+        XCTAssertEqual(state.resultLength, "3,280.84")
     }
     
     func test_reduceKilometersToMiles() {
         state.inputValueType = .kilometers
         state.outputValueType = .miles
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "0.621")
+        XCTAssertEqual(state.resultLength, "0.621")
     }
     
     func test_reduceKilometersToYards() {
         state.inputValueType = .kilometers
         state.outputValueType = .yards
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "1,093.613")
+        XCTAssertEqual(state.resultLength, "1,093.613")
     }
     
     func test_reduceMilesToYards() {
         state.inputValueType = .miles
         state.outputValueType = .yards
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "1,760")
+        XCTAssertEqual(state.resultLength, "1,760")
     }
     
     func test_reduceMilesToFeet() {
         state.inputValueType = .miles
         state.outputValueType = .feet
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "5,280")
+        XCTAssertEqual(state.resultLength, "5,280")
     }
     
     func test_reduceMilesToKilometers() {
         state.inputValueType = .miles
         state.outputValueType = .kilometers
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "1.609")
+        XCTAssertEqual(state.resultLength, "1.609")
     }
     
     func test_reduceMilesToMeters() {
         state.inputValueType = .miles
         state.outputValueType = .meters
-        state.inputLenght = 1
+        state.inputLength = 1
         
         _ = sut.reduce(&state, action: .computeValue)
         
-        XCTAssertEqual(state.resultLenght, "1,609.344")
+        XCTAssertEqual(state.resultLength, "1,609.344")
     }
     
     func test_reduceFeetToMeter() {
         state.inputValueType = .feet
         state.outputValueType = .meters
-        state.inputLenght = 1
+        state.inputLength = 1
 
         _ = sut.reduce(&state, action: .computeValue)
 
-        XCTAssertEqual(state.resultLenght, "0.305")
+        XCTAssertEqual(state.resultLength, "0.305")
     }
     
     func test_reduceFeetToYards() {
         state.inputValueType = .feet
         state.outputValueType = .yards
-        state.inputLenght = 1
+        state.inputLength = 1
 
         _ = sut.reduce(&state, action: .computeValue)
 
-        XCTAssertEqual(state.resultLenght, "0.333")
+        XCTAssertEqual(state.resultLength, "0.333")
     }
     
     func test_reduceFeetToMiles() {
         state.inputValueType = .feet
         state.outputValueType = .miles
-        state.inputLenght = 1
+        state.inputLength = 1
 
         _ = sut.reduce(&state, action: .computeValue)
 
-        XCTAssertEqual(state.resultLenght, "0")
+        XCTAssertEqual(state.resultLength, "0")
     }
     
     func test_reduceFeetToKilometers() {
         state.inputValueType = .feet
         state.outputValueType = .kilometers
-        state.inputLenght = 1
+        state.inputLength = 1
 
         _ = sut.reduce(&state, action: .computeValue)
 
-        XCTAssertEqual(state.resultLenght, "0")
+        XCTAssertEqual(state.resultLength, "0")
     }
 }

@@ -39,7 +39,7 @@ struct LengthView: View {
                 )
                 .equatable()
                 UnitsText(
-                    store.resultLenght,
+                    store.resultLength,
                     textColor: .black)
                 .equatable()
             }
@@ -62,8 +62,8 @@ struct LengthView: View {
                 UnitsTextField(
                     placeholder: "Type Lenght",
                     binding: Binding(
-                        get: { store.inputLenght },
-                        set: { store.send(.setInputLenght($0)) }),
+                        get: { store.inputLength },
+                        set: { store.send(.setInputLength($0)) }),
                     textColor: .black
                 )
                 .equatable()

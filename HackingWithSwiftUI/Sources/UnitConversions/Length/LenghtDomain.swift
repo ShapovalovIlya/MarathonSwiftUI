@@ -12,8 +12,8 @@ import Combine
 public struct LenghtDomain: ReducerDomain {
     //MARK: - State
     public struct State {
-        public var inputLenght: Double
-        public var resultLenght: String
+        public var inputLength: Double
+        public var resultLength: String
         public var inputValueType: LengthType
         public var outputValueType: LengthType
         
@@ -24,8 +24,8 @@ public struct LenghtDomain: ReducerDomain {
             inputValueType: LengthType = .meters,
             outputValueType: LengthType = .kilometers
         ) {
-            self.inputLenght = inputLenght
-            self.resultLenght = resultLenght
+            self.inputLength = inputLenght
+            self.resultLength = resultLenght
             self.inputValueType = inputValueType
             self.outputValueType = outputValueType
         }
@@ -35,7 +35,7 @@ public struct LenghtDomain: ReducerDomain {
     public enum Action: Equatable {
         case setInputType(LengthType)
         case setOutputType(LengthType)
-        case setInputLenght(Double)
+        case setInputLength(Double)
         case computeValue
     }
     
@@ -53,16 +53,16 @@ public struct LenghtDomain: ReducerDomain {
             state.outputValueType = type
             return Just(.computeValue).eraseToAnyPublisher()
             
-        case let .setInputLenght(lenght):
-            state.inputLenght = lenght
-            if state.inputLenght.isZero {
-                state.resultLenght = "Result value"
+        case let .setInputLength(length):
+            state.inputLength = length
+            if state.inputLength.isZero {
+                state.resultLength = "Result value"
             }
             return Just(.computeValue).eraseToAnyPublisher()
             
         case .computeValue:
-            state.resultLenght = Measurement(
-                value: state.inputLenght,
+            state.resultLength = Measurement(
+                value: state.inputLength,
                 unit: state.inputValueType.unit)
             .converted(to: state.outputValueType.unit)
             .value
