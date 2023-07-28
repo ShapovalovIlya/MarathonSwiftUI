@@ -6,6 +6,7 @@ import PackageDescription
 fileprivate let SwiftUDF: Target.Dependency = "SwiftUDF"
 fileprivate let SharedContent: Target.Dependency = "Shared"
 fileprivate let AppDependencies: Target.Dependency = "AppDependencies"
+fileprivate let MyMacro: Target.Dependency = .product(name: "MyMacro", package: "MyMacro")
 
 let package = Package(
     name: "HackingWithSwiftUI",
@@ -24,6 +25,7 @@ let package = Package(
         .library(name: "AppDependencies", targets: ["AppDependencies"]),
     ],
     dependencies: [
+        .package(name: "MyMacro", path: "../MyMacro"),
     ],
     targets: [
         .target(name: "SwiftUDF"),
