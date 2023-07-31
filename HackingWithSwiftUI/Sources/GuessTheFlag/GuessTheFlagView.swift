@@ -13,63 +13,50 @@ public struct GuessTheFlagView: View {
     
     @State private var selectedFlag: String?
     
+    //MARK: - Body
     public var body: some View {
-        ZStack {
-            RadialGradient(
-                stops: [
-                    .init(
-                        color: .init(red: 0.1, green: 0.2, blue: 0.45),
-                        location: 0.3),
-                    .init(
-                        color: .init(red: 0.76, green: 0.15, blue: 0.26),
-                        location: 0.3)
-                ],
-                center: .top,
-                startRadius: 200,
-                endRadius: 400)
-            .ignoresSafeArea()
-            VStack {
-                Spacer()
-                Text("Guess the Flag")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(.white)
-                VStack(spacing: 15) {
-                    VStack {
-                        Text("Tap on flag of")
-                            .font(.subheadline.weight(.heavy))
-                            .foregroundStyle(.secondary)
-                        Text(store.currentFlag)
-                            .font(.largeTitle.weight(.semibold))
-                    }
-                    
-                    ForEach(store.countries[0..<3], id: \.self) { flag in
-                        FlagButton(
-                            flag,
-                            action: {
-                                selectedFlag = $0
-                                store.send(.tapOnFlag($0))
-                            }
-                        )
-                        .opacity( computeOpacity(for: flag) )
-                        .scaleEffect( computeScale(for: flag) )
-                        .transition(.opacity)
-                    }
+        VStack {
+            Spacer()
+            Text("Guess the Flag")
+                .font(.largeTitle.bold())
+                .foregroundColor(.white)
+            VStack(spacing: 15) {
+                VStack {
+                    Text("Tap on flag of")
+                        .font(.subheadline.weight(.heavy))
+                        .foregroundStyle(.secondary)
+                    Text(store.currentFlag)
+                        .font(.largeTitle.weight(.semibold))
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                Spacer()
-                Text("Score: \(store.score)")
-                    .font(.title.bold())
-                    .foregroundColor(.white)
-                Text("Question \(store.currentNumberOfQuestions) of \(store.totalQuestions)")
-                    .font(.subheadline.bold())
-                    .foregroundColor(.white)
-                Spacer()
+                
+                ForEach(store.countries[0..<3], id: \.self) { flag in
+                    FlagButton(
+                        flag,
+                        action: {
+                            selectedFlag = $0
+                            store.send(.tapOnFlag($0))
+                        }
+                    )
+                    .opacity( computeOpacity(for: flag) )
+                    .scaleEffect( computeScale(for: flag) )
+                    .transition(.opacity)
+                }
             }
+            .frame(maxWidth: .infinity)
             .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            Spacer()
+            Text("Score: \(store.score)")
+                .font(.title.bold())
+                .foregroundColor(.white)
+            Text("Question \(store.currentNumberOfQuestions) of \(store.totalQuestions)")
+                .font(.subheadline.bold())
+                .foregroundColor(.white)
+            Spacer()
         }
+        .padding()
+        .background(GameBackground())
         .toolbar(.hidden, for: .tabBar)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { store.send(.askQuestion) }
@@ -96,7 +83,10 @@ public struct GuessTheFlagView: View {
                 set: { _ in store.send(.closeAlert) })
         ) {
             Button("Play again.") {
-                store.send(.restartGame)
+                withAnimation(.easeIn) {
+                    store.send(.restartGame)
+                    selectedFlag = nil
+                }
             }
         }
     }
