@@ -9,14 +9,14 @@ import SwiftUI
 
 struct FlagButton: View {
     let flag: String
-    let action: () -> Void
+    let action: (String) -> Void
     
     @State private var animationAmount = 0.0
     
     var body: some View {
         Button {
             withAnimation(.easeIn(duration: 1)) {
-                action()
+                action(flag)
                 animationAmount += 360
             }
         } label: {
@@ -30,7 +30,7 @@ struct FlagButton: View {
     
     init(
         _ flag: String,
-        action: @escaping () -> Void
+        action: @escaping (String) -> Void
     ) {
         self.flag = flag
         self.action = action
@@ -40,6 +40,6 @@ struct FlagButton: View {
 #Preview {
     FlagButton(
         "Russia",
-        action: {})
+        action: { _ in })
     .frame(width: 200, height: 150)
 }

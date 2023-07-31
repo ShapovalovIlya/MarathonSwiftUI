@@ -93,7 +93,7 @@ public struct GuessTheFlagDomain: ReducerDomain {
                 Just(state.currentFlag)
             )
             .map(compare(guess:truth:))
-            .delay(for: .seconds(1), scheduler: scheduler)
+            .delay(for: .milliseconds(1500), scheduler: scheduler)
             .eraseToAnyPublisher()
                   
         case .rightAnswer:

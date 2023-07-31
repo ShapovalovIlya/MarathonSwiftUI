@@ -11,6 +11,8 @@ import SwiftUDF
 public struct GuessTheFlagView: View {
     @ObservedObject var store: StoreOf<GuessTheFlagDomain>
     
+    @State private var selectedFlag: String?
+    
     public var body: some View {
         ZStack {
             RadialGradient(
@@ -43,8 +45,12 @@ public struct GuessTheFlagView: View {
                     ForEach(store.countries[0..<3], id: \.self) { flag in
                         FlagButton(
                             flag,
-                            action: { store.send(.tapOnFlag(flag)) }
+                            action: {
+                                selectedFlag = flag
+                                store.send(.tapOnFlag($0))
+                            }
                         )
+                        .opacity( computeOpacity(for: flag) )
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -74,6 +80,7 @@ public struct GuessTheFlagView: View {
         ) {
             Button("Continue") {
                 store.send(.askQuestion)
+                selectedFlag = nil
             }
         } message: {
             Text("Your score is: \(store.score)")
@@ -90,8 +97,20 @@ public struct GuessTheFlagView: View {
         }
     }
     
+    //MARK: - init(_:)
     public init(store: StoreOf<GuessTheFlagDomain>) {
         self.store = store
+    }
+    
+    //MARK: -  Private Methods
+    private func computeOpacity(for flag: String) -> Double {
+        guard
+            let selectedFlag = selectedFlag,
+            selectedFlag != flag
+        else {
+            return 1
+        }
+        return 0.25
     }
     
 }
