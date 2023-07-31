@@ -91,8 +91,8 @@ public struct WordScrambleDomain: ReducerDomain {
             
         case .addNewWord:
             return Just(state.newWord)
-                .map(lowercase)
-                .map(trimInappropriateSymbols)
+                .map{ $0.lowercased() }
+                .map{ $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .tryMap(checkAppropriate)
                 .tryMap{ [rootWord = state.rootWord] in try check($0, equalsTo: rootWord) }
                 .tryMap{ [usedWords = state.usedWords] in try checkOriginal($0, in: usedWords) }
@@ -206,14 +206,6 @@ private extension WordScrambleDomain {
 
 //MARK: - Helpers
 private extension WordScrambleDomain {
-    func lowercase(_ string: String) -> String {
-        string.lowercased()
-    }
-    
-    func trimInappropriateSymbols(_ word: String) -> String {
-        word.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
     func isPossible(_ word: String, in rootWord: String) -> Bool {
         var tempWord = rootWord
         

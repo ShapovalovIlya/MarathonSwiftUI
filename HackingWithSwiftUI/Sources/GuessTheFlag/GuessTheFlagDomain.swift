@@ -12,15 +12,15 @@ import SwiftUDF
 public struct GuessTheFlagDomain: ReducerDomain {
     //MARK: - State
     public struct State: Equatable {
-        var score: Int
-        var countries: [String]
-        var showScore: Bool
-        var showFinalScore: Bool
-        var scoreTitle: String
-        var currentNumberOfQuestions: Int
-        var totalQuestions: Int
-        var correctAnswer: Int
-        var currentFlag: String {
+        public var score: Int
+        public var countries: [String]
+        public var showScore: Bool
+        public var showFinalScore: Bool
+        public var scoreTitle: String
+        public var currentNumberOfQuestions: Int
+        public var totalQuestions: Int
+        public var correctAnswer: Int
+        public var currentFlag: String {
             countries[correctAnswer]
         }
         
@@ -60,8 +60,21 @@ public struct GuessTheFlagDomain: ReducerDomain {
         case restartGame
     }
     
+    //MARK: - Dependencies
+    private var scheduler: RunLoop
+    private var randomInt: () -> Int
+    private var shuffler: ([String]) -> [String]
+    
     //MARK: - init(_:)
-    public init() {}
+    public init(
+        scheduler: RunLoop = .main,
+        randomInt: @escaping () -> Int = { .random(in: 0..<2) },
+        shuffler: @escaping ([String]) -> [String] = { $0.shuffled() }
+    ) {
+        self.scheduler = scheduler
+        self.randomInt = randomInt
+        self.shuffler = shuffler
+    }
     
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
@@ -70,17 +83,19 @@ public struct GuessTheFlagDomain: ReducerDomain {
             guard state.currentNumberOfQuestions <= 8 else {
                 return Just(.showFinalScore).eraseToAnyPublisher()
             }
-            state.countries.shuffle()
-            state.correctAnswer = .random(in: 0..<2)
+            state.countries = shuffler(state.countries)
+            state.correctAnswer = randomInt()
             state.currentNumberOfQuestions += 1
             
         case let .tapOnFlag(country):
-            if country == state.currentFlag {
-                return Just(.rightAnswer).eraseToAnyPublisher()
-            } else {
-                return Just(.wrongAnswer(country)).eraseToAnyPublisher()
-            }
-            
+            return Publishers.Zip(
+                Just(country),
+                Just(state.currentFlag)
+            )
+            .map(compare(guess:truth:))
+            .delay(for: .seconds(1), scheduler: scheduler)
+            .eraseToAnyPublisher()
+                  
         case .rightAnswer:
             state.scoreTitle = "Right!"
             state.score += 1
@@ -101,11 +116,19 @@ public struct GuessTheFlagDomain: ReducerDomain {
         case .restartGame:
             state.currentNumberOfQuestions = 0
             state.score = 0
-            state.countries.shuffle()
-            state.correctAnswer = .random(in: 0..<2)
+            state.countries = shuffler(state.countries)
+            state.correctAnswer = randomInt()
             
         }
         return Empty().eraseToAnyPublisher()
+    }
+    
+    //MARK: - Private methods
+    private func compare(guess: String, truth: String) -> Action {
+        guard guess == truth else {
+            return .wrongAnswer(guess)
+        }
+        return .rightAnswer
     }
     
     //MARK: -  Preview store

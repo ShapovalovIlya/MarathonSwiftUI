@@ -41,12 +41,10 @@ public struct GuessTheFlagView: View {
                     }
                     
                     ForEach(store.countries[0..<3], id: \.self) { flag in
-                        Button {
-                            store.send(.tapOnFlag(flag))
-                        } label: {
-                            FlagImage(flag)
-                        }
-                        
+                        FlagButton(
+                            flag,
+                            action: { store.send(.tapOnFlag(flag)) }
+                        )
                     }
                 }
                 .frame(maxWidth: .infinity)

@@ -90,6 +90,7 @@ let package = Package(
                 "RockPaperScissors",
                 "BetterRest",
                 "WordScramble",
+                "GuessTheFlag",
             ]),
     ]
 )
