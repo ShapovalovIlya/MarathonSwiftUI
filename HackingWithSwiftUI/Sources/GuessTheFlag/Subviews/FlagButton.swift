@@ -15,8 +15,8 @@ struct FlagButton: View {
     
     var body: some View {
         Button {
-            action()
-            withAnimation {
+            withAnimation(.easeIn(duration: 1)) {
+                action()
                 animationAmount += 360
             }
         } label: {
