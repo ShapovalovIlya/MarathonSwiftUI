@@ -23,6 +23,7 @@ let package = Package(
         .library(name: "BetterRest", targets: ["BetterRest"]),
         .library(name: "WordScramble", targets: ["WordScramble"]),
         .library(name: "AppDependencies", targets: ["AppDependencies"]),
+        .library(name: "MultiplicationTables", targets: ["MultiplicationTables"]),
     ],
     dependencies: [
         .package(name: "MyMacro", path: "../MyMacro"),
@@ -83,6 +84,11 @@ let package = Package(
                 SwiftUDF,
                 AppDependencies,
             ]),
+        .target(
+            name: "MultiplicationTables",
+            dependencies: [
+                SwiftUDF
+            ]),
         .testTarget(
             name: "AppTests",
             dependencies: [
@@ -91,6 +97,7 @@ let package = Package(
                 "BetterRest",
                 "WordScramble",
                 "GuessTheFlag",
+                "MultiplicationTables",
             ]),
     ]
 )

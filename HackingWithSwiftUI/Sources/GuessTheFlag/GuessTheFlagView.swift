@@ -30,13 +30,10 @@ public struct GuessTheFlagView: View {
                 }
                 
                 ForEach(store.countries[0..<3], id: \.self) { flag in
-                    FlagButton(
-                        flag,
-                        action: {
-                            selectedFlag = $0
-                            store.send(.tapOnFlag($0))
-                        }
-                    )
+                    FlagButton(flag) {
+                        selectedFlag = $0
+                        store.send(.tapOnFlag($0))
+                    }
                     .opacity( computeOpacity(for: flag) )
                     .scaleEffect( computeScale(for: flag) )
                     .transition(.opacity)
