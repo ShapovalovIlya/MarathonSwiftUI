@@ -46,11 +46,13 @@ public struct GuessTheFlagView: View {
                         FlagButton(
                             flag,
                             action: {
-                                selectedFlag = flag
+                                selectedFlag = $0
                                 store.send(.tapOnFlag($0))
                             }
                         )
                         .opacity( computeOpacity(for: flag) )
+                        .scaleEffect( computeScale(for: flag) )
+                        .transition(.opacity)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -79,8 +81,10 @@ public struct GuessTheFlagView: View {
                 set: { _ in store.send(.closeAlert) })
         ) {
             Button("Continue") {
-                store.send(.askQuestion)
-                selectedFlag = nil
+                withAnimation(.easeIn) {
+                    store.send(.askQuestion)
+                    selectedFlag = nil
+                }
             }
         } message: {
             Text("Your score is: \(store.score)")
@@ -111,6 +115,16 @@ public struct GuessTheFlagView: View {
             return 1
         }
         return 0.25
+    }
+    
+    private func computeScale(for flag: String) -> CGFloat {
+        guard
+            let selectedFlag = selectedFlag,
+            selectedFlag != flag
+        else {
+            return 1
+        }
+        return 0.8
     }
     
 }

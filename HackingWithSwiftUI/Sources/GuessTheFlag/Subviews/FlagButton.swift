@@ -12,10 +12,11 @@ struct FlagButton: View {
     let action: (String) -> Void
     
     @State private var animationAmount = 0.0
+    private let springAnimation: Animation = .interpolatingSpring(stiffness: 10, damping: 3)
     
     var body: some View {
         Button {
-            withAnimation(.easeIn(duration: 1)) {
+            withAnimation(springAnimation) {
                 action(flag)
                 animationAmount += 360
             }
