@@ -1,5 +1,5 @@
 //
-//  MultiplicationSettingsDomainTests.swift
+//  SettingsDomainTests.swift
 //  MarathonSwiftUI
 //
 //  Created by Илья Шаповалов on 01.08.2023.
@@ -8,7 +8,7 @@
 import XCTest
 import MultiplicationTables
 
-final class MultiplicationSettingsDomainTests: XCTestCase {
+final class SettingsDomainTests: XCTestCase {
     private var sut: SettingsDomain!
     private var state: SettingsDomain.State!
     private var exp: XCTestExpectation!
