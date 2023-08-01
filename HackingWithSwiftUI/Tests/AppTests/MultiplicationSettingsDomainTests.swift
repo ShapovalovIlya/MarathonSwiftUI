@@ -36,7 +36,9 @@ final class MultiplicationSettingsDomainTests: XCTestCase {
     }
     
     func test_setNumberOfQuestions() {
+        _ = sut.reduce(&state, action: .setTotalQuestions(15))
         
+        XCTAssertEqual(state.totalQuestions, 15)
     }
 
 }

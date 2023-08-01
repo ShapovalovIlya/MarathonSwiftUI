@@ -13,17 +13,21 @@ public struct SettingsDomain: ReducerDomain {
     //MARK: - State
     public struct State {
         public var tableDifficult: Int
+        public var totalQuestions: Int
         
         public init(
-            tableDifficult: Int = 2
+            tableDifficult: Int = 2,
+            totalQuestions: Int = 5
         ) {
             self.tableDifficult = tableDifficult
+            self.totalQuestions = totalQuestions
         }
     }
     
     //MARK: - Action
     public enum Action: Equatable {
         case setDifficult(Int)
+        case setTotalQuestions(Int)
     }
     
     //MARK: - init(_:)
@@ -34,6 +38,9 @@ public struct SettingsDomain: ReducerDomain {
         switch action {
         case let .setDifficult(table):
             state.tableDifficult = table
+            
+        case let .setTotalQuestions(totalQuestions):
+            state.totalQuestions = totalQuestions
         }
         
         return Empty().eraseToAnyPublisher()
