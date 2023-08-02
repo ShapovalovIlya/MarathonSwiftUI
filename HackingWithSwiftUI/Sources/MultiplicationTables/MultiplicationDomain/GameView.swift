@@ -12,9 +12,10 @@ import Shared
 struct GameView: View {
     private struct Drawing {
         static let cornerRadius: CGFloat = 12
+        static let shadowRadius: CGFloat = 5
     }
+    @StateObject private var store: StoreOf<GameDomain>
     
-    @ObservedObject var store: StoreOf<GameDomain>
     let onCommit: (GameDomain.State) -> Void
     
     var body: some View {
@@ -42,6 +43,7 @@ struct GameView: View {
         .padding()
         .background(Material.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: Drawing.cornerRadius))
+        .shadow(radius: Drawing.shadowRadius)
         .alert(
             store.alertTitle,
             isPresented: Binding(
@@ -61,25 +63,53 @@ struct GameView: View {
             Button("Score") { onCommit(store.state) }
         }
     }
+    
+    init(
+        initialState: GameDomain.State,
+        onCommit: @escaping (GameDomain.State) -> Void
+    ) {
+        let store = Store(
+            state: initialState,
+            reducer: GameDomain()
+        )
+        self._store = StateObject(wrappedValue: store)
+        self.onCommit = onCommit
+    }
 }
 
 #Preview("game state") {
     ZStack {
         Color.blue
-        GameView(store: GameDomain.previewStore, onCommit: { _ in })
+        GameView(
+            initialState: .init(lhs: 2, maxQuestions: 5),
+            onCommit: { _ in })
     }
 }
 
 #Preview("alert state") {
     ZStack {
         Color.red
-        GameView(store: GameDomain.previewStoreAlertState, onCommit: { _ in })
+        GameView(
+            initialState: .init(
+                lhs: 2,
+                maxQuestions: 5,
+                alertTitle: "You right!",
+                isAlertShown: true
+            ),
+            onCommit: { _ in })
     }
 }
 
 #Preview("game over state") {
     ZStack {
         Color.cyan
-        GameView(store: GameDomain.previewStoreGameOverState, onCommit: { _ in })
+        GameView(
+            initialState: .init(
+                lhs: 2,
+                maxQuestions: 5,
+                alertTitle: "You right!",
+                isGameOver: true
+            ),
+            onCommit: { _ in })
     }
 }

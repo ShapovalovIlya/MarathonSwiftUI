@@ -13,6 +13,7 @@ struct FinalScoreView: View {
         static let spacing: CGFloat = 20
         static let imageSize: CGSize = .init(width: 160, height: 100)
         static let shadowRadius: CGFloat = 5
+        static let cornerRadius: CGFloat = 12
     }
     private let imageGradient: Gradient = .init(colors: [.red, .green, .blue ])
     
@@ -38,7 +39,7 @@ struct FinalScoreView: View {
         }
         .padding()
         .background(Material.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: Drawing.cornerRadius))
         .shadow(radius: Drawing.shadowRadius)
     }
     

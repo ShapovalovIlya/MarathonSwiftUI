@@ -10,6 +10,7 @@ import SwiftUDF
 import GuessTheFlag
 import RockPaperScissors
 import WordScramble
+import MultiplicationTables
 
 struct GamesTab: View {
    
@@ -25,6 +26,9 @@ struct GamesTab: View {
                     }
                     NavigationLink("Word scramble") {
                         WordScrambleView(store: WordScrambleDomain.liveStore)
+                    }
+                    NavigationLink("Multiplication tables") {
+                        MultiplicationTablesView()
                     }
                 }
             }

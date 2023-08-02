@@ -33,6 +33,9 @@ let package = Package(
         .target(name: "Shared"),
         .target(
             name: "AppDependencies",
+            dependencies: [
+                SharedContent
+            ],
             resources: [
                 .process("Resources")
             ]),
@@ -47,6 +50,7 @@ let package = Package(
                 "WeSplit",
                 "BetterRest",
                 "WordScramble",
+                "MultiplicationTables",
             ]),
         .target(
             name: "WeSplit",

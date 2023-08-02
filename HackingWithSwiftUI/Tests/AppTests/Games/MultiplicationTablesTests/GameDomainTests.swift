@@ -30,6 +30,7 @@ final class GameDomainTests: XCTestCase {
     }
     
     func test_askQuestion() {
+        state.guess = 1
         sut = .init(randomInt: { 2 })
         
         _ = sut.reduce(&state, action: .askQuestion)
@@ -37,6 +38,7 @@ final class GameDomainTests: XCTestCase {
         XCTAssertEqual(state.lhs, 2)
         XCTAssertEqual(state.rhs, 2)
         XCTAssertEqual(state.currentQuestion, 1)
+        XCTAssertEqual(state.guess, 0)
     }
     
     func test_reduceSetGuessAction() {

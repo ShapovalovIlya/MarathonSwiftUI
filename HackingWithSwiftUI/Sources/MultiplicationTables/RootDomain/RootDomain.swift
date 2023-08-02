@@ -26,6 +26,7 @@ public struct RootDomain: ReducerDomain {
     public enum Action: Equatable {
         case commitSettings(SettingsDomain.State)
         case commitGameResult(GameDomain.State)
+        case playAgainButtonTap
     }
     
     private let compileMessage: (Int, Int) -> String
@@ -51,6 +52,9 @@ public struct RootDomain: ReducerDomain {
                 message: compileMessage(result.score, result.maxQuestions)
             )
             state = .score(score)
+            
+        case .playAgainButtonTap:
+            state = .settings
         }
         
         return Empty().eraseToAnyPublisher()

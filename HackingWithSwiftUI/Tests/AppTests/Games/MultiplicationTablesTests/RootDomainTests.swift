@@ -51,5 +51,13 @@ final class RootDomainTests: XCTestCase {
         
         XCTAssertEqual(state, .score(expectation))
     }
+    
+    func test_reducePlayAgainButtonTap() {
+        state = .score(.init(score: 1, questionsCount: 1, message: ""))
+        
+        _ = sut.reduce(&state, action: .playAgainButtonTap)
+        
+        XCTAssertEqual(state, .settings)
+    }
 
 }

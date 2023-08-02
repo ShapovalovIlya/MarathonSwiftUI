@@ -70,6 +70,7 @@ public struct GameDomain: ReducerDomain {
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
         case .askQuestion:
+            state.guess = 0
             state.rhs = randomInt()
             state.currentQuestion += 1
             
@@ -106,31 +107,6 @@ public struct GameDomain: ReducerDomain {
         return Empty().eraseToAnyPublisher()
     }
     
-    //MARK: - Preview store
-    static let previewStore = Store(
-        state: Self.State(lhs: 2, maxQuestions: 5),
-        reducer: Self()
-    )
-    
-    static let previewStoreAlertState = Store(
-        state: Self.State(
-            lhs: 2,
-            maxQuestions: 5,
-            alertTitle: "You right!",
-            isAlertShown: true
-        ),
-        reducer: Self()
-    )
-    
-    static let previewStoreGameOverState = Store(
-        state: Self.State(
-            lhs: 2,
-            maxQuestions: 5,
-            alertTitle: "You right!",
-            isGameOver: true
-        ),
-        reducer: Self()
-    )
 }
 
 private extension GameDomain {
