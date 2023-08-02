@@ -17,7 +17,7 @@ final class GameDomainTests: XCTestCase {
         try await super.setUp()
         
         sut = .init()
-        state = .init()
+        state = .init(lhs: 2)
         exp = .init(description: "GameDomainTests")
     }
     
@@ -29,6 +29,114 @@ final class GameDomainTests: XCTestCase {
         try await super.tearDown()
     }
     
+    func test_askQuestion() {
+        sut = .init(randomInt: { 2 })
+        
+        _ = sut.reduce(&state, action: .askQuestion)
+        
+        XCTAssertEqual(state.lhs, 2)
+        XCTAssertEqual(state.rhs, 2)
+        XCTAssertEqual(state.currentQuestion, 1)
+    }
     
+    func test_reduceSetGuessAction() {
+        _ = sut.reduce(&state, action: .setGuess(2))
+        
+        XCTAssertEqual(state.guess, 2)
+    }
+    
+    func test_reduceResolveButtonTapEmitGuessIsCorrectTrue() {
+        state.lhs = 2
+        state.rhs = 2
+        state.guess = 4
+        
+        _ = sut.reduce(&state, action: .resolveButtonTap)
+            .sink(receiveValue: { [unowned self] action in
+                exp.fulfill()
+                XCTAssertEqual(action, .guessIsCorrect(true))
+            })
+        
+        wait(for: [exp], timeout: 0.1)
+    }
+    
+    func test_reduceResolveButtonTapEmitGuessIsCorrectFalse() {
+        state.lhs = 2
+        state.rhs = 2
+        state.guess = 3
+        
+        _ = sut.reduce(&state, action: .resolveButtonTap)
+            .sink(receiveValue: { [unowned self] action in
+                exp.fulfill()
+                XCTAssertEqual(action, .guessIsCorrect(false))
+            })
+        
+        wait(for: [exp], timeout: 0.1)
+    }
+    
+    func test_reduceGuessIsCorrectTrueAction() {
+        state.score = 0
+        state.isAlertShown = false
+        state.alertTitle = .init()
+        
+        _ = sut.reduce(&state, action: .guessIsCorrect(true))
+        
+        XCTAssertEqual(state.score, 1)
+        XCTAssertTrue(state.isAlertShown)
+        XCTAssertEqual(state.alertTitle, "You right!")
+    }
+    
+    func test_reduceGuessIsCorrectFalseAction() {
+        state.score = 0
+        state.isAlertShown = false
+        state.alertTitle = .init()
+        
+        _ = sut.reduce(&state, action: .guessIsCorrect(false))
+        
+        XCTAssertEqual(state.score, 0)
+        XCTAssertTrue(state.isAlertShown)
+        XCTAssertEqual(state.alertTitle, "Wrong answer")
+    }
+    
+    func test_reduceContinueButtonTap() {
+        state.isAlertShown = true
+        
+        _ = sut.reduce(&state, action: .continueButtonTap)
+        
+        XCTAssertFalse(state.isAlertShown)
+    }
+    
+    func test_continueButtonTapEmitAskQuestionAction() {
+        state.maxQuestions = 2
+        state.currentQuestion = 1
+        
+        _ = sut.reduce(&state, action: .continueButtonTap)
+            .sink(receiveValue: { [unowned self] action in
+                exp.fulfill()
+                XCTAssertEqual(action, .askQuestion)
+            })
+        
+        wait(for: [exp], timeout: 0.1)
+    }
+    
+    func test_continueButtonTapEmitGameOverAction() {
+        state.maxQuestions = 2
+        state.currentQuestion = 2
+        
+        _ = sut.reduce(&state, action: .continueButtonTap)
+            .sink(receiveValue: { [unowned self] action in
+                exp.fulfill()
+                XCTAssertEqual(action, .gameOver)
+            })
+        
+        wait(for: [exp], timeout: 0.1)
+    }
+    
+    func test_reduceGameOverAction() {
+        state.isGameOver = false
+        
+        _ = sut.reduce(&state, action: .gameOver)
+        
+        XCTAssertTrue(state.isGameOver)
+    }
 
 }
