@@ -11,7 +11,7 @@ import Combine
 
 public struct SettingsDomain: ReducerDomain {
     //MARK: - State
-    public struct State {
+    public struct State: Equatable {
         public var tableDifficult: Int
         public var totalQuestions: Int
         

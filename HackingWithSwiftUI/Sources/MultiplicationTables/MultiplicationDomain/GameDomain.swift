@@ -11,7 +11,7 @@ import SwiftUDF
 
 public struct GameDomain: ReducerDomain {
     //MARK: - State
-    public struct State {
+    public struct State: Equatable {
         public var lhs: Int
         public var rhs: Int
         public var currentQuestion: Int
@@ -26,7 +26,7 @@ public struct GameDomain: ReducerDomain {
             lhs: Int,
             rhs: Int = .init(),
             currentQuestion: Int = .init(),
-            maxQuestions: Int = .init(),
+            maxQuestions: Int,
             guess: Int = .init(),
             score: Int = .init(),
             alertTitle: String = .init(),
@@ -53,6 +53,7 @@ public struct GameDomain: ReducerDomain {
         case guessIsCorrect(Bool)
         case continueButtonTap
         case gameOver
+        case dismissAlert
     }
     
     //MARK: - Dependencies
@@ -90,14 +91,16 @@ public struct GameDomain: ReducerDomain {
             setup(&state, withAnswerResult: isCorrect)
             
         case .continueButtonTap:
-            state.isAlertShown = false
-            
             return Just(state)
                 .map(reduceGameFlow(_:))
                 .eraseToAnyPublisher()
             
         case .gameOver:
             state.isGameOver = true
+            state.alertTitle = "Game over!"
+            
+        case .dismissAlert:
+            state.isAlertShown = false
             
         }
         return Empty().eraseToAnyPublisher()
@@ -105,7 +108,27 @@ public struct GameDomain: ReducerDomain {
     
     //MARK: - Preview store
     static let previewStore = Store(
-        state: Self.State(lhs: 2),
+        state: Self.State(lhs: 2, maxQuestions: 5),
+        reducer: Self()
+    )
+    
+    static let previewStoreAlertState = Store(
+        state: Self.State(
+            lhs: 2,
+            maxQuestions: 5,
+            alertTitle: "You right!",
+            isAlertShown: true
+        ),
+        reducer: Self()
+    )
+    
+    static let previewStoreGameOverState = Store(
+        state: Self.State(
+            lhs: 2,
+            maxQuestions: 5,
+            alertTitle: "You right!",
+            isGameOver: true
+        ),
         reducer: Self()
     )
 }

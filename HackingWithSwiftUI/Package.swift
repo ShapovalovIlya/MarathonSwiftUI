@@ -87,7 +87,8 @@ let package = Package(
         .target(
             name: "MultiplicationTables",
             dependencies: [
-                SwiftUDF
+                SwiftUDF,
+                SharedContent,
             ]),
         .testTarget(
             name: "AppTests",

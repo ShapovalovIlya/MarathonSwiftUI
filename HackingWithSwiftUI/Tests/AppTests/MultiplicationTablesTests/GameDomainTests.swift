@@ -17,7 +17,7 @@ final class GameDomainTests: XCTestCase {
         try await super.setUp()
         
         sut = .init()
-        state = .init(lhs: 2)
+        state = .init(lhs: 2, maxQuestions: 20)
         exp = .init(description: "GameDomainTests")
     }
     
@@ -97,14 +97,6 @@ final class GameDomainTests: XCTestCase {
         XCTAssertEqual(state.alertTitle, "Wrong answer")
     }
     
-    func test_reduceContinueButtonTap() {
-        state.isAlertShown = true
-        
-        _ = sut.reduce(&state, action: .continueButtonTap)
-        
-        XCTAssertFalse(state.isAlertShown)
-    }
-    
     func test_continueButtonTapEmitAskQuestionAction() {
         state.maxQuestions = 2
         state.currentQuestion = 1
@@ -133,10 +125,20 @@ final class GameDomainTests: XCTestCase {
     
     func test_reduceGameOverAction() {
         state.isGameOver = false
+        state.alertTitle = .init()
         
         _ = sut.reduce(&state, action: .gameOver)
         
         XCTAssertTrue(state.isGameOver)
+        XCTAssertEqual(state.alertTitle, "Game over!")
+    }
+    
+    func test_reduceDismissAlertAction() {
+        state.isAlertShown = true
+        
+        _ = sut.reduce(&state, action: .dismissAlert)
+        
+        XCTAssertFalse(state.isAlertShown)
     }
 
 }
