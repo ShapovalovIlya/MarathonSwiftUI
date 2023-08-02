@@ -43,11 +43,13 @@ final class RootDomainTests: XCTestCase {
     }
     
     func test_reduceCommitGameResult() {
+        sut = .init(compileMessage: { _,_ in "Baz" })
         let gameResult = GameDomain.State(lhs: 1, maxQuestions: 1, score: 1)
+        let expectation = Score(score: 1, questionsCount: 1, message: "Baz")
         
         _ = sut.reduce(&state, action: .commitGameResult(gameResult))
         
-        
+        XCTAssertEqual(state, .score(expectation))
     }
 
 }

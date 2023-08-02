@@ -8,12 +8,7 @@
 import Foundation
 import Combine
 import SwiftUDF
-
-public struct Score: Equatable {
-    let score: Int
-    let questionsCount: Int
-    let message: String
-}
+import AppDependencies
 
 public struct RootDomain: ReducerDomain {
     //MARK: - State
@@ -33,21 +28,29 @@ public struct RootDomain: ReducerDomain {
         case commitGameResult(GameDomain.State)
     }
     
+    private let compileMessage: (Int, Int) -> String
+    
     //MARK: - init(_:)
-    public init() {}
+    public init(compileMessage: @escaping (Int, Int) -> String = MessageGenerator.compileMessage) {
+        self.compileMessage = compileMessage
+    }
     
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
         case let .commitSettings(settings):
-            state = .game(.init(
-                    lhs: settings.tableDifficult,
-                    maxQuestions: settings.totalQuestions)
-            )
+            let gameState = GameDomain.State(
+                lhs: settings.tableDifficult,
+                maxQuestions: settings.totalQuestions)
+            state = .game(gameState)
             
         case let .commitGameResult(result):
-            break
-            
+            let score = Score(
+                score: result.score,
+                questionsCount: result.maxQuestions,
+                message: compileMessage(result.score, result.maxQuestions)
+            )
+            state = .score(score)
         }
         
         return Empty().eraseToAnyPublisher()

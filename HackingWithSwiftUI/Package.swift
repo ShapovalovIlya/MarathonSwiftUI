@@ -89,6 +89,7 @@ let package = Package(
             dependencies: [
                 SwiftUDF,
                 SharedContent,
+                AppDependencies,
             ]),
         .testTarget(
             name: "AppTests",
