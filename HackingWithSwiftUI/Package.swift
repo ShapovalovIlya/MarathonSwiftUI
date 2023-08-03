@@ -24,6 +24,7 @@ let package = Package(
         .library(name: "WordScramble", targets: ["WordScramble"]),
         .library(name: "AppDependencies", targets: ["AppDependencies"]),
         .library(name: "MultiplicationTables", targets: ["MultiplicationTables"]),
+        .library(name: "iExpense", targets: ["iExpense"]),
     ],
     dependencies: [
         .package(name: "MyMacro", path: "../MyMacro"),
@@ -34,7 +35,7 @@ let package = Package(
         .target(
             name: "AppDependencies",
             dependencies: [
-                SharedContent
+                SharedContent,
             ],
             resources: [
                 .process("Resources")
@@ -95,6 +96,13 @@ let package = Package(
                 SharedContent,
                 AppDependencies,
             ]),
+        .target(
+            name: "iExpense",
+            dependencies: [
+                SwiftUDF,
+                SharedContent,
+                AppDependencies,
+            ]),
         .testTarget(
             name: "AppTests",
             dependencies: [
@@ -104,6 +112,7 @@ let package = Package(
                 "WordScramble",
                 "GuessTheFlag",
                 "MultiplicationTables",
+                "iExpense",
             ]),
     ]
 )
