@@ -61,7 +61,7 @@ public struct WordScrambleDomain: ReducerDomain {
     
     //MARK: - init(_:)
     public init(
-        loadWords: @escaping () -> AnyPublisher<[String], Error> = FileManager.loadResources,
+        loadWords: @escaping () -> AnyPublisher<[String], Error> = FileManager.shared.loadResources,
         isReal: @escaping (String) -> Bool = TextChecker.isReal
     ) {
         self.loadWords = loadWords

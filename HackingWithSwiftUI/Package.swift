@@ -53,6 +53,7 @@ let package = Package(
                 "WordScramble",
                 "MultiplicationTables",
                 "iExpense",
+                "Moonshot",
             ]),
         .target(
             name: "WeSplit",
@@ -104,6 +105,16 @@ let package = Package(
                 SharedContent,
                 AppDependencies,
             ]),
+        .target(
+            name: "Moonshot",
+            dependencies: [
+                SwiftUDF,
+                SharedContent,
+                AppDependencies,
+            ],
+            resources: [
+                .process("Assets.xcassets"),
+            ]),
         .testTarget(
             name: "AppTests",
             dependencies: [
@@ -114,6 +125,7 @@ let package = Package(
                 "GuessTheFlag",
                 "MultiplicationTables",
                 "iExpense",
+                "Moonshot",
             ]),
     ]
 )
