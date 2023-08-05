@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftUDF
 
 public struct BetterRestView: View {
-    @ObservedObject private var store: StoreOf<BetterRestDomain>
+    @StateObject private var store: StoreOf<BetterRestDomain>
     
     public var body: some View {
         Form {
@@ -63,8 +63,8 @@ public struct BetterRestView: View {
         .onAppear { store.send(.calculateSleep) }
     }
     
-    public init(store: StoreOf<BetterRestDomain>) {
-        self.store = store
+    public init(store: StoreOf<BetterRestDomain> = BetterRestDomain.previewStore) {
+        self._store = StateObject(wrappedValue: store)
     }
 }
 

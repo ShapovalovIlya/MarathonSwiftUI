@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftUDF
 
 public struct UnitConversionsView: View {
-    @ObservedObject var store: StoreOf<UnitConversionsDomain>
+    @StateObject var store: StoreOf<UnitConversionsDomain>
     
     @StateObject private var temperatureStore = Store(
         state: TemperatureDomain.State(),
@@ -62,8 +62,8 @@ public struct UnitConversionsView: View {
         .toolbar(.hidden, for: .tabBar)
     }
     
-    public init(store: StoreOf<UnitConversionsDomain>) {
-        self.store = store
+    public init(store: StoreOf<UnitConversionsDomain> = UnitConversionsDomain.previewStore) {
+        self._store = StateObject(wrappedValue: store)
     }
 }
 

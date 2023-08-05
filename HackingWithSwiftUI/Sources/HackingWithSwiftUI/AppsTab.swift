@@ -17,20 +17,10 @@ struct AppsTab: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    NavigationLink("We Split") {
-                        WeSplitView(store: WeSplitDomain.previewStore)
-                    }
-                    NavigationLink("Unit conversion") {
-                        UnitConversionsView(store: UnitConversionsDomain.previewStore)
-                    }
-                    NavigationLink("Better rest") {
-                        BetterRestView(store: BetterRestDomain.previewStore)
-                    }
-                    NavigationLink("iExpenses") {
-                        iExpenseView()
-                    }
-                }
+                NavigationLink("We Split", destination: WeSplitView())
+                NavigationLink("Unit conversion", destination: UnitConversionsView())
+                NavigationLink("Better rest", destination: BetterRestView())
+                NavigationLink("iExpenses", destination: iExpenseView()) 
             }
             .navigationTitle("Regular Apps")
         }

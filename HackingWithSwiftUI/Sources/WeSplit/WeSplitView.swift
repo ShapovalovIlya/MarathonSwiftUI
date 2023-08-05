@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftUDF
 
 public struct WeSplitView: View {
-    @ObservedObject var store: StoreOf<WeSplitDomain>
+    @StateObject var store: StoreOf<WeSplitDomain>
     @FocusState private var amountIsFocused: Bool
     private let format: FloatingPointFormatStyle<Double>.Currency = .currency(code: Locale.current.currency?.identifier ?? "USD")
     
@@ -84,8 +84,8 @@ public struct WeSplitView: View {
         }
     }
     
-    public init(store: StoreOf<WeSplitDomain>) {
-        self.store = store
+    public init(store: StoreOf<WeSplitDomain> = WeSplitDomain.previewStore) {
+        self._store = StateObject(wrappedValue: store)
     }
     
 }
