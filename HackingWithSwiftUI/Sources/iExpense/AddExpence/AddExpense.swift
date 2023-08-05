@@ -10,8 +10,9 @@ import SwiftUDF
 import Shared
 
 struct AddExpense: View {
-    @ObservedObject var store: StoreOf<ExpensesDomain>
+    @StateObject var store: StoreOf<AddExpenseDomain> = AddExpenseDomain.previewStore
     @Environment(\.dismiss) var dismiss
+    let onCommit: (ExpenseItem) -> Void
     
     var body: some View {
         NavigationStack {
@@ -34,19 +35,32 @@ struct AddExpense: View {
                     }
                 }
                 
-                TextField(
-                    "Amount",
-                    value: Binding(
-                        get: { store.amount },
-                        set: { store.send(.setExpenseAmount($0)) }),
-                    format: .currency(code: "USD")
-                )
-                .keyboardType(.decimalPad)
+                HStack {
+                    TextField(
+                        "Amount",
+                        value: Binding(
+                            get: { store.amount },
+                            set: { store.send(.setExpenseAmount($0)) }),
+                        format: .currency(code: store.currency)
+                    )
+                    .keyboardType(.decimalPad)
+                    .id(store.currency)
+                    
+                    CurrencyPicker(
+                        title: "Pick currency",
+                        currency: Binding(
+                            get: { store.currency },
+                            set: { store.send(.setCurrency($0)) }
+                        )
+                    )
+                    .equatable()
+                    .labelsHidden()
+                }
             }
             .navigationTitle("Add new expense")
             .toolbar {
                 Button("Save") {
-                    store.send(.saveButtonTap)
+                    onCommit(store.expense)
                     dismiss()
                 }
             }
@@ -55,5 +69,8 @@ struct AddExpense: View {
 }
 
 #Preview {
-    AddExpense(store: ExpensesDomain.previewStore)
+    AddExpense(
+        store: AddExpenseDomain.previewStore,
+        onCommit: { _ in }
+    )
 }

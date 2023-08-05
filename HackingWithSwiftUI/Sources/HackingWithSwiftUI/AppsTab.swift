@@ -10,6 +10,7 @@ import SwiftUDF
 import WeSplit
 import UnitConversions
 import BetterRest
+import iExpense
 
 struct AppsTab: View {
     
@@ -25,6 +26,9 @@ struct AppsTab: View {
                     }
                     NavigationLink("Better rest") {
                         BetterRestView(store: BetterRestDomain.previewStore)
+                    }
+                    NavigationLink("iExpenses") {
+                        iExpenseView()
                     }
                 }
             }

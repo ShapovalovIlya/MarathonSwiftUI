@@ -52,6 +52,7 @@ let package = Package(
                 "BetterRest",
                 "WordScramble",
                 "MultiplicationTables",
+                "iExpense",
             ]),
         .target(
             name: "WeSplit",

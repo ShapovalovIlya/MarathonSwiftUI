@@ -19,7 +19,7 @@ struct ExpenseRow: View {
                 Text(expense.type.rawValue)
             }
             Spacer()
-            Text(expense.amount, format: .currency(code: "USD"))
+            Text(expense.amount, format: .currency(code: expense.currency))
         }
     }
 }

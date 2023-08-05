@@ -12,17 +12,20 @@ public struct ExpenseItem: Identifiable, Equatable, Codable {
     public let name: String
     public let type: ExpenseType
     public let amount: Double
+    public let currency: String
     
     public init(
         id: UUID = .init(),
         name: String,
         type: ExpenseType,
-        amount: Double
+        amount: Double,
+        currency: String
     ) {
         self.id = id
         self.name = name
         self.type = type
         self.amount = amount
+        self.currency = currency
     }
 }
 
@@ -32,8 +35,8 @@ extension ExpenseItem {
     }
     
     public static let sample: [ExpenseItem] = [
-        .init(name: "Coffee", type: .personal, amount: 10),
-        .init(name: "Toilet paper", type: .business, amount: 2),
-        .init(name: "Sweet roll", type: .personal, amount: 5)
+        .init(name: "Coffee", type: .personal, amount: 10, currency: "USD"),
+        .init(name: "Toilet paper", type: .business, amount: 2, currency: "RUB"),
+        .init(name: "Sweet roll", type: .personal, amount: 5, currency: "EUR")
     ]
 }

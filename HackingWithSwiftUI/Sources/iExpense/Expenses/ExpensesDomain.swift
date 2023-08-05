@@ -15,22 +15,21 @@ public struct ExpensesDomain: ReducerDomain {
     //MARK: - State
     public struct State {
         public var expenses: [ExpenseItem]
-        public var name: String
-        public var type: ExpenseItem.ExpenseType
-        public var amount: Double
         public var showingAddExpense: Bool
+        
+        public var personalExpenses: [ExpenseItem] {
+            expenses.filter({ $0.type == .personal })
+        }
+        
+        public var businessExpenses: [ExpenseItem] {
+            expenses.filter({ $0.type == .business })
+        }
         
         public init(
             expenses: [ExpenseItem] = .init(),
-            name: String = .init(),
-            type: ExpenseItem.ExpenseType = .personal,
-            amount: Double = .init(),
             showingAddExpense: Bool = false
         ) {
             self.expenses = expenses
-            self.name = name
-            self.type = type
-            self.amount = amount
             self.showingAddExpense = showingAddExpense
         }
     }
@@ -40,14 +39,11 @@ public struct ExpensesDomain: ReducerDomain {
         case viewAppeared
         case loadExpensesResponse(Result<[ExpenseItem], Error>)
         case removeExpense(ExpenseItem)
-        case setExpenseName(String)
-        case setExpenseType(ExpenseItem.ExpenseType)
-        case setExpenseAmount(Double)
         case closeAddExpenseSheet
         case openAddExpenseSheet
-        case saveButtonTap
         case saveExpenses
         case savingExpensesError(Error)
+        case addExpense(ExpenseItem)
         
         public static func == (lhs: ExpensesDomain.Action, rhs: ExpensesDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
@@ -55,17 +51,14 @@ public struct ExpensesDomain: ReducerDomain {
     }
     
     //MARK: - Dependencies
-    private let uuid: () -> UUID
     private let saveExpenses: ([ExpenseItem]) throws -> Void
     private let loadExpenses: () -> AnyPublisher<[ExpenseItem], Error>
     
     //MARK: - init(_:)
     public init(
-        uuid: @escaping () -> UUID = UUID.init,
         saveExpenses: @escaping ([ExpenseItem]) throws -> Void = UserDefaultsClient.shared.save(expenses:),
         loadExpenses: @escaping () -> AnyPublisher<[ExpenseItem], Error> = UserDefaultsClient.shared.loadExpenses
     ) {
-        self.uuid = uuid
         self.saveExpenses = saveExpenses
         self.loadExpenses = loadExpenses
     }
@@ -83,20 +76,11 @@ public struct ExpensesDomain: ReducerDomain {
             state.expenses = expenses
             
         case let .loadExpensesResponse(.failure(error)):
-            print(error)
+            print(error.localizedDescription)
             
         case let .removeExpense(expense):
             state.expenses.removeAll(where: { $0.id == expense.id })
             return Just(.saveExpenses).eraseToAnyPublisher()
-            
-        case let .setExpenseName(name):
-            state.name = name
-            
-        case let .setExpenseType(type):
-            state.type = type
-            
-        case let .setExpenseAmount(amount):
-            state.amount = amount
             
         case .closeAddExpenseSheet:
             state.showingAddExpense = false
@@ -104,15 +88,8 @@ public struct ExpensesDomain: ReducerDomain {
         case .openAddExpenseSheet:
             state.showingAddExpense = true
             
-        case .saveButtonTap:
-            let newExpense = ExpenseItem(
-                id: uuid(),
-                name: state.name,
-                type: state.type,
-                amount: state.amount)
-            
+        case let .addExpense(newExpense):
             state.expenses.append(newExpense)
-            
             return Just(.saveExpenses).eraseToAnyPublisher()
             
         case .saveExpenses:

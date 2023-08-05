@@ -16,6 +16,7 @@ final class ExpensesDomainTests: XCTestCase {
     private var state: ExpensesDomain.State!
     private var exp: XCTestExpectation!
     private var testExpense: ExpenseItem!
+    private var testCollection: [ExpenseItem]!
     
     override func setUp() async throws {
         try await super.setUp()
@@ -23,7 +24,11 @@ final class ExpensesDomainTests: XCTestCase {
         sut = .init()
         state = .init()
         exp = .init(description: "ExpensesDomainTests")
-        testExpense = ExpenseItem(id: UUID(uuidString: "Bar") ?? .init(), name: "Baz", type: .personal, amount: 1)
+        testExpense = ExpenseItem(id: UUID(uuidString: "Bar") ?? .init(), name: "Baz", type: .personal, amount: 1, currency: "Baz")
+        testCollection = [
+            ExpenseItem(name: "Baz", type: .personal, amount: 1, currency: "Bar"),
+            ExpenseItem(name: "Bar", type: .business, amount: 1, currency: "Foo")
+        ]
     }
     
     override func tearDown() async throws {
@@ -31,41 +36,18 @@ final class ExpensesDomainTests: XCTestCase {
         state = nil
         exp = nil
         testExpense = nil
+        testCollection = nil
     }
     
     func test_reduceRemoveExpensesAtIndexSet() {
         state.expenses = [
-            .init(name: "Baz", type: .business, amount: 1),
+            .init(name: "Baz", type: .business, amount: 1, currency: "Bar"),
             testExpense
         ]
         
         _ = sut.reduce(&state, action: .removeExpense(testExpense))
         
         XCTAssertFalse(state.expenses.contains(testExpense))
-    }
-    
-    func test_setExpenseName() {
-        state.name = ""
-        
-        _ = sut.reduce(&state, action: .setExpenseName("Baz"))
-        
-        XCTAssertEqual(state.name, "Baz")
-    }
-    
-    func test_setExpenseType() {
-        state.type = .personal
-        
-        _ = sut.reduce(&state, action: .setExpenseType(.business))
-        
-        XCTAssertEqual(state.type, .business)
-    }
-    
-    func test_setExpenseAmount() {
-        state.amount = 0.0
-        
-        _ = sut.reduce(&state, action: .setExpenseAmount(1.0))
-        
-        XCTAssertEqual(state.amount, 1.0)
     }
     
     func test_reduceCloseAddExpenseSheet() {
@@ -85,13 +67,9 @@ final class ExpensesDomainTests: XCTestCase {
     }
     
     func test_reduceSaveNewExpenseAction() {
-        sut = .init(uuid: { self.testExpense.id })
-        state.name = testExpense.name
-        state.type = testExpense.type
-        state.amount = testExpense.amount
         state.expenses = .init()
         
-        _ = sut.reduce(&state, action: .saveButtonTap)
+        _ = sut.reduce(&state, action: .addExpense(testExpense))
         
         XCTAssertEqual(state.expenses, [testExpense])
     }
@@ -99,7 +77,7 @@ final class ExpensesDomainTests: XCTestCase {
     func test_reduceSaveButtonTapEmitSaveExpensesAction() {
         sut = .init(saveExpenses: { _ in })
         
-        _ = sut.reduce(&state, action: .saveButtonTap)
+        _ = sut.reduce(&state, action: .addExpense(testExpense))
             .sink(receiveValue: { [unowned self] action in
                 exp.fulfill()
                 XCTAssertEqual(action, .saveExpenses)
@@ -122,8 +100,7 @@ final class ExpensesDomainTests: XCTestCase {
     }
     
     func test_loadingExpensesEndWithSuccess() {
-        let testCollection = [ExpenseItem(name: "Baz", type: .personal, amount: 1)]
-        sut = .init(loadExpenses: {
+        sut = .init(loadExpenses: { [unowned self] in
             Just(testCollection)
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
@@ -136,6 +113,14 @@ final class ExpensesDomainTests: XCTestCase {
             })
         
         wait(for: [exp], timeout: 0.1)
+    }
+    
+    func test_reduceSuccessLoadedExpenses() {
+        state.expenses = .init()
+        
+        _ = sut.reduce(&state, action: .loadExpensesResponse(.success(testCollection)))
+        
+        XCTAssertEqual(state.expenses, testCollection)
     }
     
     func test_loadingExpensesEndWithError() {
@@ -152,6 +137,24 @@ final class ExpensesDomainTests: XCTestCase {
             })
         
         wait(for: [exp], timeout: 0.1)
+    }
+    
+    func test_returnPersonalExpenses() {
+        state.expenses = testCollection
+        
+        XCTAssertEqual(
+            state.personalExpenses,
+            testCollection.filter({ $0.type == .personal })
+        )
+    }
+    
+    func test_returnBusinessExpenses() {
+        state.expenses = testCollection
+        
+        XCTAssertEqual(
+            state.businessExpenses,
+            testCollection.filter({ $0.type == .business })
+        )
     }
 
 }
