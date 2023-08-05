@@ -8,7 +8,7 @@
 import SwiftUI
 import Shared
 
-struct ExpenseRow: View {
+struct ExpenseRow: View, Equatable {
     let expense: ExpenseItem
     
     var body: some View {
@@ -22,8 +22,16 @@ struct ExpenseRow: View {
             Text(expense.amount, format: .currency(code: expense.currency))
         }
     }
+    
+    static func == (lhs: ExpenseRow, rhs: ExpenseRow) -> Bool {
+        return lhs.expense.id == rhs.expense.id
+    }
 }
 
 #Preview {
-    ExpenseRow(expense: .sample[0])
+    VStack {
+        ExpenseRow(expense: .sample[0])
+        ExpenseRow(expense: .sample[1])
+        ExpenseRow(expense: .sample[2])
+    }
 }

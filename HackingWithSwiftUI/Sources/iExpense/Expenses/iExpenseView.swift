@@ -9,24 +9,6 @@ import SwiftUI
 import SwiftUDF
 import Shared
 
-struct ExpensesList: View {
-    let expenses: [ExpenseItem]
-    let removeAction: (ExpenseItem) -> Void
-    
-    var body: some View {
-        ForEach(expenses) { expense in
-            ExpenseRow(expense: expense)
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) {
-                        removeAction(expense)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-        }
-    }
-}
-
 public struct iExpenseView: View {
     @StateObject var store: StoreOf<ExpensesDomain>
     

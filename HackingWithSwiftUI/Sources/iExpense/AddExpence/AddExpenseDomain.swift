@@ -20,7 +20,7 @@ public struct AddExpenseDomain: ReducerDomain {
         public var type: ExpenseItem.ExpenseType
         
         public var expense: ExpenseItem {
-            ExpenseItem(id: id, name: name, type: type, amount: amount, currency: currency)
+            .init(id: id, name: name, type: type, amount: amount, currency: currency)
         }
         
         public init(

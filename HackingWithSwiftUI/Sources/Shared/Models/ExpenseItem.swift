@@ -35,8 +35,8 @@ extension ExpenseItem {
     }
     
     public static let sample: [ExpenseItem] = [
-        .init(name: "Coffee", type: .personal, amount: 10, currency: "USD"),
-        .init(name: "Toilet paper", type: .business, amount: 2, currency: "RUB"),
-        .init(name: "Sweet roll", type: .personal, amount: 5, currency: "EUR")
+        .init(name: "Coffee", type: .personal, amount: 9, currency: "USD"),
+        .init(name: "Toilet paper", type: .business, amount: 90, currency: "RUB"),
+        .init(name: "Sweet roll", type: .personal, amount: 110, currency: "EUR")
     ]
 }
