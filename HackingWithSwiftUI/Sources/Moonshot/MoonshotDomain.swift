@@ -29,6 +29,7 @@ public struct MoonshotDomain: ReducerDomain {
     
     //MARK: - Action
     public enum Action {
+        case viewAppeared
         case loadAstronauts
         case loadMissions
         case loadAstronautsResponse(Result<[String: Astronaut], Error>)
@@ -59,6 +60,13 @@ public struct MoonshotDomain: ReducerDomain {
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
+        case .viewAppeared:
+            return Publishers.Merge(
+                Just(Action.loadAstronauts),
+                Just(Action.loadMissions)
+            )
+            .eraseToAnyPublisher()
+            
         case .loadAstronauts:
             return getAstronauts("astronauts.json")
                 .map(mapToSuccessLoadAstronautsAction(_:))
@@ -133,7 +141,7 @@ extension MoonshotDomain {
     )
     
     //MARK: - Live store
-    static let liveStore = Store(
+    public static let liveStore = Store(
         state: Self.State(),
         reducer: Self()
     )

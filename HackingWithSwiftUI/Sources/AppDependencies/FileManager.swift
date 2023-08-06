@@ -19,7 +19,12 @@ public struct FileManager {
     )
     
     private init() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "y-MM-dd"
+        
         decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .formatted(formatter)
+        
         logger.debug("Initialized.")
     }
     

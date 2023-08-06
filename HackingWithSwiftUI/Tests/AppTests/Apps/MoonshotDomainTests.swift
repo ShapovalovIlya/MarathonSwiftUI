@@ -46,6 +46,29 @@ final class MoonshotDomainTests: XCTestCase {
         testError = nil
     }
     
+    func test_viewAppearEmitRequestActions() {
+        sut = .init(
+            getAstronauts: { [unowned self] _ in
+                Fail(error: testError)
+                    .eraseToAnyPublisher()
+            },
+            getMissions: { [unowned self] _ in
+                Fail(error: testError)
+                    .eraseToAnyPublisher()
+            }
+        )
+        
+        _ = sut.reduce(&state, action: .viewAppeared)
+            .collect()
+            .sink(receiveValue: {
+                [unowned self] actions in
+                exp.fulfill()
+                XCTAssertEqual(actions, [.loadAstronauts, .loadMissions])
+            })
+        
+        wait(for: [exp], timeout: 0.1)
+    }
+    
     func test_loadAstronautsEndWithSuccess() {
         sut = .init(getAstronauts: { [unowned self] _ in
             Just(testAstronauts)

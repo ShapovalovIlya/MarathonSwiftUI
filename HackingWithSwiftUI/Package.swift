@@ -25,6 +25,7 @@ let package = Package(
         .library(name: "AppDependencies", targets: ["AppDependencies"]),
         .library(name: "MultiplicationTables", targets: ["MultiplicationTables"]),
         .library(name: "iExpense", targets: ["iExpense"]),
+        .library(name: "Moonshot", targets: ["Moonshot"]),
     ],
     dependencies: [
         .package(name: "MyMacro", path: "../MyMacro"),

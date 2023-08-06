@@ -9,13 +9,25 @@ import Foundation
 
 public struct Mission: Identifiable, Codable, Equatable {
     public let id: Int
-    public let launchDate: String?
+    public let launchDate: Date?
     public let crew: [CrewRole]
     public let description: String
     
+    public var displayName: String {
+        "Apollo \(id)"
+    }
+    
+    public var image: String {
+        "apollo\(id)"
+    }
+    
+    public var formattedLaunchDate: String {
+        launchDate?.formatted(date: .abbreviated, time: .omitted) ?? "N/A"
+    }
+    
     public init(
         id: Int,
-        launchDate: String?,
+        launchDate: Date?,
         crew: [CrewRole],
         description: String
     ) {
@@ -26,9 +38,9 @@ public struct Mission: Identifiable, Codable, Equatable {
     }
     
     public static let sample: [Mission] = [
-        .init(id: 1, launchDate: "01.01.1970", crew: CrewRole.sample, description: "First one"),
-        .init(id: 1, launchDate: "01.01.1980", crew: CrewRole.sample, description: "Second one"),
-        .init(id: 1, launchDate: "01.01.1990", crew: CrewRole.sample, description: "Third one")
+        .init(id: 1, launchDate: .now, crew: CrewRole.sample, description: "First one"),
+        .init(id: 7, launchDate: .distantPast, crew: CrewRole.sample, description: "Second one"),
+        .init(id: 8, launchDate: .distantFuture, crew: CrewRole.sample, description: "Third one")
     ]
 }
 
