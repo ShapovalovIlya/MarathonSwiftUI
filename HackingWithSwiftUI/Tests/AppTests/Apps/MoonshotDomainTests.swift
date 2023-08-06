@@ -30,9 +30,9 @@ final class MoonshotDomainTests: XCTestCase {
             "Foo" : .init(id: "Foo", name: "Foo", description: "Foo")
         ]
         testMissions = [
-            .init(id: 1, launchDate: "Baz", crew: [.init(name: "Baz", role: "Baz")], description: "Baz"),
-            .init(id: 1, launchDate: "Bar", crew: [.init(name: "Bar", role: "Bar")], description: "Bar"),
-            .init(id: 1, launchDate: "Foo", crew: [.init(name: "Foo", role: "Foo")], description: "Foo")
+            .init(id: 1, launchDate: .now, crew: [.init(name: "Baz", role: "Baz")], description: "Baz"),
+            .init(id: 1, launchDate: .now, crew: [.init(name: "Bar", role: "Bar")], description: "Bar"),
+            .init(id: 1, launchDate: .now, crew: [.init(name: "Foo", role: "Foo")], description: "Foo")
         ]
         testError = URLError(.badURL)
     }
