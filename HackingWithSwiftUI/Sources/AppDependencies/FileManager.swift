@@ -8,17 +8,24 @@
 import Foundation
 import Combine
 import Shared
+import OSLog
 
 public struct FileManager {
     public static let shared = FileManager()
     private let decoder: JSONDecoder
+    private let logger = Logger(
+        subsystem: Bundle.module.bundleIdentifier!,
+        category: String(describing: Self.self)
+    )
     
     private init() {
         decoder = JSONDecoder()
+        logger.debug("Initialized.")
     }
     
     public func getData<T: Decodable>(from file: String) -> AnyPublisher<T, Error> {
-        load(file)
+        logger.debug("Decoding \(String(describing: T.self)) from \(file)")
+        return load(file)
             .decode(type: T.self, decoder: decoder)
             .eraseToAnyPublisher()
     }
@@ -32,10 +39,22 @@ public struct FileManager {
     }
     
     private func load(_ file: String, withExtension: String? = nil) -> AnyPublisher<Data, Error> {
-        Bundle.module.url(forResource: file, withExtension: withExtension)
+        logger.debug("Loading file: \(file)")
+        return Bundle.module.url(forResource: file, withExtension: withExtension)
             .publisher
-            .compactMap({ $0 })
-            .tryMap(Data.init)
+            .tryMap(tryUnwrap(url:))
+            .tryMap(getData(from:))
             .eraseToAnyPublisher()
+    }
+    
+    private func tryUnwrap(url: URL?) throws -> URL {
+        guard let url = url else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        return url
+    }
+    
+    private func getData(from url: URL) throws -> Data {
+        try Data(contentsOf: url)
     }
 }
