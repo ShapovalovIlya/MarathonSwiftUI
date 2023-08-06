@@ -56,7 +56,7 @@ public extension Mission {
         
         public static let sample: [CrewRole] = [
             .init(name: "Eminem", role: "MC"),
-            .init(name: "Dr.Dre", role: "MC"),
+            .init(name: "Dr.Dre", role: "Producer"),
             .init(name: "Woodkid", role: "Musician")
         ]
     }

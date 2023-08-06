@@ -21,7 +21,11 @@ public struct Moonshot: View {
                 LazyVGrid(columns: columns) {
                     ForEach(store.missions) { mission in
                         NavigationLink {
-                            Text("Detail")
+                            MissionView(
+                                mission: mission,
+                                astronauts: store.astronauts
+                            )
+                            .equatable()
                         } label: {
                             MissionRow(mission: mission)
                                 .equatable()
