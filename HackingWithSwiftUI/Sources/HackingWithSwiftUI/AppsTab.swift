@@ -11,6 +11,7 @@ import WeSplit
 import UnitConversions
 import BetterRest
 import iExpense
+import Moonshot
 
 struct AppsTab: View {
     
@@ -20,7 +21,8 @@ struct AppsTab: View {
                 NavigationLink("We Split", destination: WeSplitView())
                 NavigationLink("Unit conversion", destination: UnitConversionsView())
                 NavigationLink("Better rest", destination: BetterRestView())
-                NavigationLink("iExpenses", destination: iExpenseView()) 
+                NavigationLink("iExpenses", destination: iExpenseView())
+                NavigationLink("Moonshot", destination: Moonshot())
             }
             .navigationTitle("Regular Apps")
         }
