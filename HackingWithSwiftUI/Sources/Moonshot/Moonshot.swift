@@ -7,9 +7,11 @@
 
 import SwiftUI
 import SwiftUDF
+import Shared
 
 public struct Moonshot: View {
     @StateObject var store: StoreOf<MoonshotDomain>
+    @State var isGridLayout = true
     
     private let columns: [GridItem] = [
         .init(.adaptive(minimum: 150))
@@ -18,19 +20,16 @@ public struct Moonshot: View {
     public var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVGrid(columns: columns) {
-                    ForEach(store.missions) { mission in
-                        NavigationLink {
-                            MissionView(
-                                mission: mission,
-                                astronauts: store.astronauts
-                            )
-                            .equatable()
-                        } label: {
+                Group {
+                    LazyVGrid(columns: columns) {
+                        NavigationCollection(data: store.missions
+                        ) { mission in
+                            MissionView(mission: mission, astronauts: store.astronauts)
+                                .equatable()
+                        } label: { mission in
                             MissionRow(mission: mission)
                                 .equatable()
                         }
-
                     }
                 }
                 .padding([.horizontal, .bottom])
@@ -38,6 +37,15 @@ public struct Moonshot: View {
             .navigationTitle("Moonshot")
             .background(.darkBackground)
             .preferredColorScheme(.dark)
+            .toolbar {
+                Button {
+                    isGridLayout.toggle()
+                } label: {
+                    Image(systemName: isGridLayout
+                          ? "square.grid.3x3"
+                          : "list.bullet")
+                }
+            }
         }
         .onAppear { store.send(.viewAppeared) }
     }

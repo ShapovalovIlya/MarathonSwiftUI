@@ -12,6 +12,7 @@ import Shared
 struct MissionView: View, Equatable {
     private struct Drawing {
         static let bottomPadding: CGFloat = 5
+        static let imageScale: CGFloat = 0.6
     }
     
     struct CrewMember: Equatable {
@@ -25,11 +26,11 @@ struct MissionView: View, Equatable {
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
-                VStack{
-                    Image(mission.image, bundle: .module)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: geometry.size.width * 0.6)
+                VStack {
+                    MoonshotImage(name: mission.image)
+                        .frame(maxWidth: geometry.size.width * Drawing.imageScale)
+                    
+                    Text(mission.fullLaunchDate)
                     
                     VStack(alignment: .leading) {
                         Text("Crew")

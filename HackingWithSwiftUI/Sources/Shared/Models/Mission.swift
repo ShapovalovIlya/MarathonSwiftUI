@@ -25,6 +25,10 @@ public struct Mission: Identifiable, Codable, Equatable {
         launchDate?.formatted(date: .abbreviated, time: .omitted) ?? "N/A"
     }
     
+    public var fullLaunchDate: String {
+        launchDate?.formatted(date: .long, time: .shortened) ?? "N/A"
+    }
+    
     public init(
         id: Int,
         launchDate: Date?,

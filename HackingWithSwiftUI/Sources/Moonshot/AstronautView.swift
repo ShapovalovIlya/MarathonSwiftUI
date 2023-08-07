@@ -14,9 +14,7 @@ struct AstronautView: View {
     var body: some View {
         ScrollView {
             VStack {
-                Image(astronaut.id, bundle: .module)
-                    .resizable()
-                    .scaledToFit()
+                MoonshotImage(name: astronaut.id)
                 
                 Text(astronaut.description)
                     .padding()
