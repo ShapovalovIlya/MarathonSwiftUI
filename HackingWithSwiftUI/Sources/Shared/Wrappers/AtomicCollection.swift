@@ -32,12 +32,4 @@ public struct AtomicCollection<C> where C: Collection,
     public subscript<T>(dynamicMember writableKeyPath: WritableKeyPath<C, T>) -> T {
         wrappedValue[keyPath: writableKeyPath]
     }
-    
-    public mutating func append(_ newElement: C.Element) {
-        wrappedValue.append(newElement)
-    }
-    
-    public mutating func append<S>(contentsOf sequence: S) where S: Sequence, S.Element == C.Element {
-        wrappedValue.append(contentsOf: sequence)
-    }
 }

@@ -17,22 +17,26 @@ public struct Moonshot: View {
         .init(.adaptive(minimum: 150))
     ]
     
+    private let rows: [GridItem] = [
+        .init(.flexible(maximum: .infinity))
+    ]
+    
     public var body: some View {
         NavigationStack {
             ScrollView {
-                Group {
-                    LazyVGrid(columns: columns) {
-                        NavigationCollection(data: store.missions
-                        ) { mission in
-                            MissionView(mission: mission, astronauts: store.astronauts)
-                                .equatable()
-                        } label: { mission in
-                            MissionRow(mission: mission)
-                                .equatable()
-                        }
+                LazyVGrid(columns: isGridLayout ? columns : rows
+                ) {
+                    NavigationCollection(data: store.missions
+                    ) { mission in
+                        MissionView(mission: mission, astronauts: store.astronauts)
+                            .equatable()
+                    } label: { mission in
+                        MissionRow(mission: mission)
+                            .equatable()
                     }
                 }
                 .padding([.horizontal, .bottom])
+                .animation(.easeInOut, value: isGridLayout)
             }
             .navigationTitle("Moonshot")
             .background(.darkBackground)
@@ -42,8 +46,8 @@ public struct Moonshot: View {
                     isGridLayout.toggle()
                 } label: {
                     Image(systemName: isGridLayout
-                          ? "square.grid.3x3"
-                          : "list.bullet")
+                          ? "list.bullet"
+                          : "square.grid.3x3")
                 }
             }
         }
