@@ -7,14 +7,20 @@
 
 import Foundation
 import Combine
+import OSLog
 
 public typealias StoreOf<R: ReducerDomain> = Store<R.State, R.Action>
 
 @dynamicMemberLookup
 public final class Store<State, Action>: ObservableObject {
-    @Published public private(set) var state: State
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: "Store<\(State.self)>"
+    )
     private let reducer: any ReducerDomain<State, Action>
     private var cancellable: Set<AnyCancellable> = .init()
+    
+    @Published public private(set) var state: State
     
     //MARK: - init(_:)
     public init<R: ReducerDomain>(
@@ -33,7 +39,7 @@ public final class Store<State, Action>: ObservableObject {
             .store(in: &cancellable)
     }
     
-    public func cancelTasks() {
+    public func dispose() {
         cancellable.removeAll()
     }
     
@@ -41,4 +47,12 @@ public final class Store<State, Action>: ObservableObject {
         state[keyPath: keyPath]
     }
     
+    public func logState() -> Self {
+        self.$state
+            .map(String.init(reflecting:))
+            .sink { [weak self] in self?.logger.debug("\($0)") }
+            .store(in: &self.cancellable)
+        
+        return self
+    }
 }
