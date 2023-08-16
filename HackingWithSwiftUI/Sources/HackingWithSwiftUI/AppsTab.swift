@@ -12,6 +12,7 @@ import UnitConversions
 import BetterRest
 import iExpense
 import Moonshot
+import Shared
 
 struct AppsTab: View {
     
@@ -23,6 +24,7 @@ struct AppsTab: View {
                 NavigationLink("Better rest", destination: BetterRestView())
                 NavigationLink("iExpenses", destination: iExpenseView())
                 NavigationLink("Moonshot", destination: Moonshot())
+                NavigationLink("Drawing", destination: DrawingView())
             }
             .navigationTitle("Regular Apps")
         }

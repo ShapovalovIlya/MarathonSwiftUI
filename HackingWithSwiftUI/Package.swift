@@ -29,6 +29,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "MyMacro", path: "../MyMacro"),
+//        .package(url: "https://github.com/ShapovalovIlya/PropertyWrappers.git", branch: "main"),
     ],
     targets: [
         .target(name: "SwiftUDF"),
