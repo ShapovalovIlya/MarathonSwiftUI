@@ -6,7 +6,10 @@ import PackageDescription
 fileprivate let SwiftUDF: Target.Dependency = "SwiftUDF"
 fileprivate let SharedContent: Target.Dependency = "Shared"
 fileprivate let AppDependencies: Target.Dependency = "AppDependencies"
-fileprivate let MyMacro: Target.Dependency = .product(name: "MyMacro", package: "MyMacro")
+
+fileprivate enum Dependencies {
+    
+}
 
 let package = Package(
     name: "HackingWithSwiftUI",
@@ -28,8 +31,9 @@ let package = Package(
         .library(name: "Moonshot", targets: ["Moonshot"]),
     ],
     dependencies: [
-        .package(name: "MyMacro", path: "../MyMacro"),
+ //       .package(url: "https://github.com/ShapovalovIlya/SwiftMacro.git", branch: "main"),
 //        .package(url: "https://github.com/ShapovalovIlya/PropertyWrappers.git", branch: "main"),
+//        .package(url: "https://github.com/ShapovalovIlya/SwiftFP.git", branch: "main"),
     ],
     targets: [
         .target(name: "SwiftUDF"),

@@ -14,7 +14,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		86EC729A2A7412D300865968 /* MyMacro */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = MyMacro; sourceTree = "<group>"; };
 		CEC043342A66D57A006CE00B /* MarathonSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarathonSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEC043372A66D57A006CE00B /* MarathonSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarathonSwiftUIApp.swift; sourceTree = "<group>"; };
 		CEC0433B2A66D57C006CE00B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -37,7 +36,6 @@
 		CEC0432B2A66D57A006CE00B = {
 			isa = PBXGroup;
 			children = (
-				86EC729A2A7412D300865968 /* MyMacro */,
 				CEC043452A66D666006CE00B /* HackingWithSwiftUI */,
 				CEC043362A66D57A006CE00B /* MarathonSwiftUI */,
 				CEC043352A66D57A006CE00B /* Products */,

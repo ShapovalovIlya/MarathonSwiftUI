@@ -8,40 +8,55 @@
 import SwiftUI
 
 public struct Spirograph: Shape {
-    let innerRadius: Int
-    let outerRadius: Int
-    let distance: Int
+    let innerRadius: Double
+    let outerRadius: Double
+    let distance: Double
     let amount: Double
     
     public func path(in rect: CGRect) -> Path {
         let divisor = gcd(innerRadius, outerRadius)
-        let outerRadius = Double(self.outerRadius)
-        let innerRadius = Double(self.innerRadius)
-        let distance = Double(self.distance)
         let difference = innerRadius - outerRadius
-        let endPoint = ceil(2 * Double.pi * outerRadius / Double(divisor)) * amount
+        let endPoint = ceil(2 * Double.pi * outerRadius / divisor) * amount
         
+        var path = Path()
         
+        stride(from: 0, through: endPoint, by: 0.01)
+            .forEach { theta in
+                var x = difference * cos(theta) + distance * cos(difference / outerRadius * theta)
+                var y = difference * sin(theta) - distance * sin(difference / outerRadius * theta)
+                
+                x += rect.width / 2
+                y += rect.height / 2
+                
+                if theta == 0 {
+                    path.move(to: CGPoint(x: x, y: y))
+                } else {
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+            }
         
-        return Path { path in
-            
-        }
+        return path
     }
     
-    public init(innerRadius: Int, outerRadius: Int, distance: Int, amount: Double) {
+    public init(
+        innerRadius: Double,
+        outerRadius: Double,
+        distance: Double,
+        amount: Double
+    ) {
         self.innerRadius = innerRadius
         self.outerRadius = outerRadius
         self.distance = distance
         self.amount = amount
     }
     
-    private func gcd(_ a: Int, _ b: Int) -> Int {
+    private func gcd(_ a: Double, _ b: Double) -> Double {
         var a = a
         var b = b
         
         while b != 0 {
             let temp = b
-            b = a % b
+            b = a.truncatingRemainder(dividingBy: b)
             a = temp
         }
         
