@@ -61,11 +61,10 @@ public struct MoonshotDomain: ReducerDomain {
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
         case .viewAppeared:
-            return Publishers.Merge(
-                Just(Action.loadAstronauts),
-                Just(Action.loadMissions)
+            return run(
+                .loadAstronauts,
+                .loadMissions
             )
-            .eraseToAnyPublisher()
             
         case .loadAstronauts:
             return getAstronauts("astronauts.json")
@@ -92,7 +91,7 @@ public struct MoonshotDomain: ReducerDomain {
             logger.error("Fail to load missions: \(error.localizedDescription)")
         }
         
-        return Empty().eraseToAnyPublisher()
+        return empty()
     }
     
 }

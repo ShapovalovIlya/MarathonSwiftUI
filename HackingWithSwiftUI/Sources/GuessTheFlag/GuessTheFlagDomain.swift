@@ -81,7 +81,7 @@ public struct GuessTheFlagDomain: ReducerDomain {
         switch action {
         case .askQuestion:
             guard state.currentNumberOfQuestions <= 8 else {
-                return Just(.showFinalScore).eraseToAnyPublisher()
+                return run(.showFinalScore)
             }
             state.countries = shuffler(state.countries)
             state.correctAnswer = randomInt()

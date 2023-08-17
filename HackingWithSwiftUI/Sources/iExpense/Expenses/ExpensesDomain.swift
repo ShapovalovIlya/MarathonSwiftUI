@@ -80,7 +80,7 @@ public struct ExpensesDomain: ReducerDomain {
             
         case let .removeExpense(expense):
             state.expenses.removeAll(where: { $0.id == expense.id })
-            return Just(.saveExpenses).eraseToAnyPublisher()
+            return run(.saveExpenses)
             
         case .closeAddExpenseSheet:
             state.showingAddExpense = false
@@ -90,14 +90,13 @@ public struct ExpensesDomain: ReducerDomain {
             
         case let .addExpense(newExpense):
             state.expenses.append(newExpense)
-            return Just(.saveExpenses).eraseToAnyPublisher()
+            return run(.saveExpenses)
             
         case .saveExpenses:
             do {
                 try saveExpenses(state.expenses)
             } catch {
-                return Just(.savingExpensesError(error))
-                    .eraseToAnyPublisher()
+                return run(.savingExpensesError(error))
             }
             
         case let .savingExpensesError(error):

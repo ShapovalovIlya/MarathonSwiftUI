@@ -72,7 +72,7 @@ public struct WordScrambleDomain: ReducerDomain {
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
         switch action {
         case .startGame:
-            return Just(.loadWordsRequest).eraseToAnyPublisher()
+            return run(.loadWordsRequest)
             
         case .loadWordsRequest:
             return loadWords()

@@ -86,7 +86,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
             
         case let .playerChooseWeapon(weapon):
             state.playerWeapon = weapon
-            return Just(.playRound).eraseToAnyPublisher()
+            return run(.playRound)
             
         case .playRound:
             return Just(state)
@@ -113,7 +113,7 @@ public struct RockPaperScissorsDomain: ReducerDomain {
         case .dismissAlert:
             state.isAlertShown = false
         }
-        return Empty().eraseToAnyPublisher()
+        return empty()
     }
     
     //MARK: - Preview Store
@@ -163,8 +163,8 @@ private extension RockPaperScissorsDomain {
     
     func reduceGameFlow(_ state: State, isFulfill: Bool) -> AnyPublisher<Action, Never> {
         guard state.currentRound < state.maxRoundsCount else {
-            return Just(.gameOver).eraseToAnyPublisher()
+            return run(.gameOver)
         }
-        return Just(.showGameResult(isFulfill)).eraseToAnyPublisher()
+        return run(.showGameResult(isFulfill))
     }
 }
