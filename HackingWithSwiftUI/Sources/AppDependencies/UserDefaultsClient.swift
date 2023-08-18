@@ -46,9 +46,9 @@ public struct UserDefaultsClient {
         userDefaults.set(encoded, forKey: String(describing: T.self))
     }
     
-    func loadData<T: Decodable>(_ type: T) -> AnyPublisher<T, Error> {
+    public func loadData<T: Decodable>(_ type: T.Type) -> AnyPublisher<T, Error> {
         compose(
-            loadData(for: String(describing: type.self)),
+            loadData(for: String(describing: type)),
             wrapToPublisher,
             decode(type: type)
         )(userDefaults)
@@ -63,9 +63,9 @@ public struct UserDefaultsClient {
 }
 
 private extension UserDefaultsClient {
-    func decode<T: Decodable>(type: T) -> (AnyPublisher<Data, Error>) -> AnyPublisher<T, Error> {
+    func decode<T: Decodable>(type: T.Type) -> (AnyPublisher<Data, Error>) -> AnyPublisher<T, Error> {
         {
-            $0.decode(type: T.self, decoder: decoder)
+            $0.decode(type: type, decoder: decoder)
                 .eraseToAnyPublisher()
         }
     }
