@@ -21,8 +21,8 @@ final class HabitListDomainTests: XCTestCase {
         try await super.setUp()
         
         testModels = [
-            .init(),
-            .init()
+            .init(title: "Baz", description: "Baz", count: 1),
+            .init(title: "Bar", description: "Bar", count: 2)
         ]
         sut = .init(loadHabits: { [unowned self] _ in
             Just(testModels)
@@ -71,5 +71,41 @@ final class HabitListDomainTests: XCTestCase {
         )
         
         XCTAssertEqual(spy.actions.first, .loadHabitsResponse(.success(testModels)))
+    }
+    
+    func test_reduceSuccessLoadHabitResponse() {
+        _ = sut.reduce(&state, action: .loadHabitsResponse(.success(testModels)))
+        
+        XCTAssertEqual(state.habits, testModels)
+    }
+    
+    func test_reduceFailLoadHabitResponse() {
+        sut = .init(loadHabits: { [unowned self] _ in
+            Fail(error: testError)
+                .eraseToAnyPublisher()
+        })
+        
+        _ = sut.reduce(&state, action: .loadHabitsResponse(.failure(testError)))
+        
+        XCTAssertTrue(state.isAlert)
+    }
+    
+    func test_reduceRemoveHabitsAtOffset() {
+        state.habits = testModels
+        
+        _ = sut.reduce(&state, action: .removeHabitAtOffset(.init(integer: 1)))
+        
+        XCTAssertEqual(state.habits.count, testModels.count - 1)
+    }
+    
+    func test_reduceUpdateHabitAction() {
+        state.habits = testModels
+        var tempModel = testModels[0]
+        tempModel.count = 10
+        
+        _ = sut.reduce(&state, action: .updateHabit(tempModel))
+        
+        XCTAssertEqual(state.habits.count, 2)
+        XCTAssertEqual(state.habits.first, tempModel)
     }
 }

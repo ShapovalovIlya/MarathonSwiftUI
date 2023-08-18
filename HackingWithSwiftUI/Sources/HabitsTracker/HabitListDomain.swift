@@ -10,17 +10,7 @@ import SwiftUDF
 import Combine
 import AppDependencies
 import OSLog
-
-public struct Habit: Codable {
-    
-    public init() {}
-    
-    static let sample: [Habit] = [
-        .init(),
-        .init(),
-        .init()
-    ]
-}
+import SwiftFP
 
 public struct HabitListDomain: ReducerDomain {
     private let logger = Logger(
@@ -30,8 +20,16 @@ public struct HabitListDomain: ReducerDomain {
     
     //MARK: - State
     public struct State {
+        public var habits: [Habit]
+        public var isAlert: Bool
         
-        public init() {}
+        public init(
+            habits: [Habit] = .init(),
+            isAlert: Bool = false
+        ) {
+            self.habits = habits
+            self.isAlert = isAlert
+        }
     }
     
     //MARK: - Action
@@ -39,6 +37,8 @@ public struct HabitListDomain: ReducerDomain {
         case viewAppeared
         case loadHabitsRequest
         case loadHabitsResponse(Result<[Habit], Error>)
+        case removeHabitAtOffset(IndexSet)
+        case updateHabit(Habit)
         
         public static func == (lhs: HabitListDomain.Action, rhs: HabitListDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
@@ -69,11 +69,22 @@ public struct HabitListDomain: ReducerDomain {
                 .catch(catchToFailAction)
                 .eraseToAnyPublisher()
             
-        case let .loadHabitsResponse(.success(test)):
-            break
+        case let .loadHabitsResponse(.success(habits)):
+            logger.debug("Load habits successful")
+            state.habits = habits
             
         case let .loadHabitsResponse(.failure(error)):
-            break
+            logger.error("Unable to load habits: \(error.localizedDescription)")
+            state.isAlert = true
+            
+        case let .removeHabitAtOffset(offsets):
+            state.habits.remove(atOffsets: offsets)
+            
+        case let .updateHabit(updatedHabit):
+            state.habits = compose(
+                removeDuplicate(updatedHabit),
+                insert(updatedHabit)
+            )(state.habits)
         }
         
         return empty()
@@ -97,6 +108,21 @@ public struct HabitListDomain: ReducerDomain {
 }
 
 private extension HabitListDomain {
+    
+    func removeDuplicate(_ habit: Habit) -> ([Habit]) -> [Habit] {
+        { habits in
+            habits.filter({ $0.id != habit.id })
+        }
+    }
+    
+    func insert(_ habit: Habit) -> ([Habit]) -> [Habit] {
+        { habits in
+            var tmp = habits
+            tmp.insert(habit, at: 0)
+            return tmp
+        }
+    }
+    
     func transformToSuccessAction(_ habits: [Habit]) -> Action {
         .loadHabitsResponse(.success(habits))
     }
