@@ -27,7 +27,7 @@ struct AppsTab: View {
                 NavigationLink("Moonshot", destination: Moonshot())
  //               NavigationLink("Drawing", destination: DrawingView())
                 NavigationLink("Habit tracker") {
-                    HabitListView(store: HabitListDomain.previewStore)
+                    HabitListView()
                 }
             }
             .navigationTitle("Regular Apps")

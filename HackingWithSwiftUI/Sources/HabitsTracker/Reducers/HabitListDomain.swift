@@ -23,6 +23,7 @@ public struct HabitListDomain: ReducerDomain {
         public var habits: [Habit]
         public var isAlert: Bool
         public var isShowSheet: Bool
+        public let key = "habits"
         
         public init(
             habits: [Habit] = .init(),
@@ -54,13 +55,13 @@ public struct HabitListDomain: ReducerDomain {
     }
     
     //MARK: - Dependencies
-    private let loadHabits: ([Habit].Type) -> AnyPublisher<[Habit], Error>
-    private let saveHabits: ([Habit]) throws -> Void
+    private let loadHabits: (String) -> AnyPublisher<[Habit], Error>
+    private let saveHabits: ([Habit], String) throws -> Void
     
     //MARK: - init(_:)
     public init(
-        loadHabits: @escaping ([Habit].Type) -> AnyPublisher<[Habit], Error> = UserDefaultsClient.shared.loadData,
-        saveHabits: @escaping ([Habit]) throws -> Void = UserDefaultsClient.shared.saveModel
+        loadHabits: @escaping (String) -> AnyPublisher<[Habit], Error> = UserDefaultsClient.shared.loadData,
+        saveHabits: @escaping ([Habit], String) throws -> Void = UserDefaultsClient.shared.saveModel
     ) {
         self.loadHabits = loadHabits
         self.saveHabits = saveHabits
@@ -75,7 +76,7 @@ public struct HabitListDomain: ReducerDomain {
             
         case .loadHabitsRequest:
             logger.debug("Request habits")
-            return loadHabits([Habit].self)
+            return loadHabits(state.key)
                 .replaceError(with: [])
                 .map(Action.loadHabitsResponse)
                 .eraseToAnyPublisher()
@@ -83,7 +84,7 @@ public struct HabitListDomain: ReducerDomain {
         case .saveHabitsRequest:
             logger.debug("Saving habits")
             do {
-                try saveHabits(state.habits)
+                try saveHabits(state.habits, state.key)
             } catch {
                 state.isAlert = true
             }
@@ -125,7 +126,7 @@ public struct HabitListDomain: ReducerDomain {
                     .setFailureType(to: Error.self)
                     .eraseToAnyPublisher()
             },
-            saveHabits: { _ in }
+            saveHabits: { _,_  in }
         )
     )
     

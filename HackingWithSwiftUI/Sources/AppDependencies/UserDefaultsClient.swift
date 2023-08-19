@@ -45,18 +45,16 @@ public struct UserDefaultsClient {
             .eraseToAnyPublisher()
     }
     
-    public func loadData<T: Decodable>(_ type: T.Type) -> AnyPublisher<T, Error> {
-        let key = String(describing: type)
-        logger.debug("Load \(type) for key \(key)")
+    public func loadData<T: Decodable>(forKey key: String) -> AnyPublisher<T, Error> {
+        logger.debug("Load \(String(describing: T.self)) for key \(key)")
         return compose(
             loadData(forKey: key),
             wrapToPublisher,
-            decode(type: type)
+            decode(type: T.self)
         )(userDefaults)
     }
     
-    public func saveModel<T: Encodable>(_ model: T) throws {
-        let key = String(describing: model)
+    public func saveModel<T: Encodable>(_ model: T, withKey key: String) throws {
         logger.debug("Save \(String(describing: model)) for key \(key)")
         return try tryCompose(
             encode(),
