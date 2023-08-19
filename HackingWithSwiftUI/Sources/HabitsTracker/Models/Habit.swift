@@ -14,9 +14,9 @@ public struct Habit: Codable, Equatable, Identifiable {
     public var count: Int
     
     public init(
-        title: String,
-        description: String,
-        count: Int
+        title: String = .init(),
+        description: String = .init(),
+        count: Int = .init()
     ) {
         self.title = title
         self.description = description

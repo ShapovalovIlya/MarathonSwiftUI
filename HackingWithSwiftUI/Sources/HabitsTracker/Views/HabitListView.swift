@@ -21,7 +21,10 @@ public struct HabitListView: View {
                 } else {
                     ForEach(store.habits) { habit in
                         NavigationLink(habit.title) {
-                            EmptyView()
+                            HabitDetailView(
+                                habit: habit,
+                                onCommit: { store.send(.updateHabit($0)) }
+                            )
                         }
                     }
                     .onDelete(perform: removeHabitAction)
@@ -75,7 +78,7 @@ public struct HabitListView: View {
     }
     
     private func addHabitSheet() -> some View {
-        EmptyView()
+        HabitDetailView { store.send(.updateHabit($0)) }
     }
 }
 
