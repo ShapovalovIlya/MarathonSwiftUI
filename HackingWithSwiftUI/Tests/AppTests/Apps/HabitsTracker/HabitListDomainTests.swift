@@ -62,7 +62,7 @@ final class HabitListDomainTests: XCTestCase {
             sut.reduce(&state, action: .loadHabitsRequest)
         )
         
-        XCTAssertEqual(spy.actions.first, .loadHabitsResponse(.failure(testError)))
+        XCTAssertEqual(spy.actions.first, .loadHabitsResponse([]))
     }
     
     func test_loadHabitsRequestEndWithSuccess() {
@@ -70,11 +70,11 @@ final class HabitListDomainTests: XCTestCase {
             sut.reduce(&state, action: .loadHabitsRequest)
         )
         
-        XCTAssertEqual(spy.actions.first, .loadHabitsResponse(.success(testModels)))
+        XCTAssertEqual(spy.actions.first, .loadHabitsResponse(testModels))
     }
     
     func test_reduceSuccessLoadHabitResponse() {
-        _ = sut.reduce(&state, action: .loadHabitsResponse(.success(testModels)))
+        _ = sut.reduce(&state, action: .loadHabitsResponse(testModels))
         
         XCTAssertEqual(state.habits, testModels)
     }
@@ -85,9 +85,9 @@ final class HabitListDomainTests: XCTestCase {
                 .eraseToAnyPublisher()
         })
         
-        _ = sut.reduce(&state, action: .loadHabitsResponse(.failure(testError)))
+        _ = sut.reduce(&state, action: .loadHabitsResponse([]))
         
-        XCTAssertTrue(state.isAlert)
+        XCTAssertTrue(state.habits.isEmpty)
     }
     
     func test_reduceRemoveHabitsAtOffset() {
@@ -107,5 +107,13 @@ final class HabitListDomainTests: XCTestCase {
         
         XCTAssertEqual(state.habits.count, 2)
         XCTAssertEqual(state.habits.first, tempModel)
+    }
+    
+    func test_dismissAlert() {
+        state.isAlert = true
+        
+        _ = sut.reduce(&state, action: .dismissAlert)
+        
+        XCTAssertFalse(state.isAlert)
     }
 }

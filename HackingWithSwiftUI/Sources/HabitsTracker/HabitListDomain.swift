@@ -36,9 +36,10 @@ public struct HabitListDomain: ReducerDomain {
     public enum Action: Equatable {
         case viewAppeared
         case loadHabitsRequest
-        case loadHabitsResponse(Result<[Habit], Error>)
+        case loadHabitsResponse([Habit])
         case removeHabitAtOffset(IndexSet)
         case updateHabit(Habit)
+        case dismissAlert
         
         public static func == (lhs: HabitListDomain.Action, rhs: HabitListDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
@@ -65,26 +66,21 @@ public struct HabitListDomain: ReducerDomain {
         case .loadHabitsRequest:
             logger.debug("Request habits")
             return loadHabits([Habit].self)
-                .map(transformToSuccessAction)
-                .catch(catchToFailAction)
+                .replaceError(with: [])
+                .map(Action.loadHabitsResponse)
                 .eraseToAnyPublisher()
             
-        case let .loadHabitsResponse(.success(habits)):
-            logger.debug("Load habits successful")
+        case let .loadHabitsResponse(habits):
             state.habits = habits
-            
-        case let .loadHabitsResponse(.failure(error)):
-            logger.error("Unable to load habits: \(error.localizedDescription)")
-            state.isAlert = true
             
         case let .removeHabitAtOffset(offsets):
             state.habits.remove(atOffsets: offsets)
             
         case let .updateHabit(updatedHabit):
-            state.habits = compose(
-                removeDuplicate(updatedHabit),
-                insert(updatedHabit)
-            )(state.habits)
+            exchange(updatedHabit)(&state.habits)
+            
+        case .dismissAlert:
+            state.isAlert = false
         }
         
         return empty()
@@ -108,10 +104,18 @@ public struct HabitListDomain: ReducerDomain {
 }
 
 private extension HabitListDomain {
+    func exchange(_ habit: Habit) -> (inout [Habit]) -> Void {
+        {
+            $0 = compose(
+                removeHabit(withId: habit.id),
+                insert(habit)
+            )($0)
+        }
+    }
     
-    func removeDuplicate(_ habit: Habit) -> ([Habit]) -> [Habit] {
+    func removeHabit(withId id: UUID) -> ([Habit]) -> [Habit] {
         { habits in
-            habits.filter({ $0.id != habit.id })
+            habits.filter({ $0.id != id })
         }
     }
     
@@ -121,13 +125,5 @@ private extension HabitListDomain {
             tmp.insert(habit, at: 0)
             return tmp
         }
-    }
-    
-    func transformToSuccessAction(_ habits: [Habit]) -> Action {
-        .loadHabitsResponse(.success(habits))
-    }
-    
-    func catchToFailAction(_ error: Error) -> AnyPublisher<Action, Never> {
-        run(.loadHabitsResponse(.failure(error)))
     }
 }
