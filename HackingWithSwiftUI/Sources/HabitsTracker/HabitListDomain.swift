@@ -76,6 +76,11 @@ public struct HabitListDomain: ReducerDomain {
             
         case .saveHabitsRequest:
             logger.debug("Saving habits")
+            do {
+                try saveHabits(state.habits)
+            } catch {
+                state.isAlert = true
+            }
             
         case let .loadHabitsResponse(habits):
             state.habits = habits
@@ -85,7 +90,7 @@ public struct HabitListDomain: ReducerDomain {
             return run(.saveHabitsRequest)
             
         case let .updateHabit(updatedHabit):
-            exchange(updatedHabit)(&state.habits)
+            addNew(updatedHabit)(&state.habits)
             return run(.saveHabitsRequest)
             
         case .dismissAlert:
@@ -116,7 +121,7 @@ public struct HabitListDomain: ReducerDomain {
 }
 
 private extension HabitListDomain {
-    func exchange(_ habit: Habit) -> (inout [Habit]) -> Void {
+    func addNew(_ habit: Habit) -> (inout [Habit]) -> Void {
         {
             $0 = compose(
                 removeHabit(withId: habit.id),

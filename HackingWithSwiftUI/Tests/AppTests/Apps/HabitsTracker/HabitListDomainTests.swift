@@ -127,11 +127,13 @@ final class HabitListDomainTests: XCTestCase {
     }
     
     func test_saveHabitRequestEndWithError() {
-        sut = .init(saveHabits: { _ in URLError(.badURL) })
+        sut = .init(saveHabits: { _ in throw URLError(.badURL) })
         
         spy.schedule(
-            
+            sut.reduce(&state, action: .saveHabitsRequest)
         )
+        
+        XCTAssertTrue(state.isAlert)
     }
     
     func test_dismissAlert() {
