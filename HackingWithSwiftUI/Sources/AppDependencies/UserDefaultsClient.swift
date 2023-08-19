@@ -9,9 +9,13 @@ import Foundation
 import Shared
 import Combine
 import SwiftFP
+import OSLog
 
 public struct UserDefaultsClient {
-    typealias UserData = (Data) throws -> Data
+    private let logger = Logger(
+        subsystem: Bundle.module.bundleIdentifier!,
+        category: String(describing: Self.self)
+    )
     public static let shared = Self()
     
     let userDefaults = UserDefaults.standard
@@ -42,17 +46,21 @@ public struct UserDefaultsClient {
     }
     
     public func loadData<T: Decodable>(_ type: T.Type) -> AnyPublisher<T, Error> {
-        compose(
-            loadData(for: String(describing: type)),
+        let key = String(describing: type)
+        logger.debug("Load \(type) for key \(key)")
+        return compose(
+            loadData(forKey: key),
             wrapToPublisher,
             decode(type: type)
         )(userDefaults)
     }
     
     public func saveModel<T: Encodable>(_ model: T) throws {
-        try tryCompose(
+        let key = String(describing: model)
+        logger.debug("Save \(String(describing: model)) for key \(key)")
+        return try tryCompose(
             encode(),
-            saveData(for: String(describing: model))
+            saveData(forKey: key)
         )(model)
     }
 }
@@ -80,11 +88,11 @@ private extension UserDefaultsClient {
         .eraseToAnyPublisher()
     }
     
-    func loadData(for key: String) -> (UserDefaults) -> Data? {
+    func loadData(forKey key: String) -> (UserDefaults) -> Data? {
         { $0.data(forKey: key) }
     }
     
-    func saveData(for key: String) -> (Data) -> Void {
+    func saveData(forKey key: String) -> (Data) -> Void {
         { userDefaults.set($0, forKey: key) }
     }
 }
