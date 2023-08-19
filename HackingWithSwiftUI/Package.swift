@@ -80,6 +80,7 @@ let package = Package(
                 "MultiplicationTables",
                 "iExpense",
                 "Moonshot",
+                "HabitsTracker",
             ]),
         .target(
             name: "WeSplit",

@@ -104,6 +104,16 @@ final class HabitListDomainTests: XCTestCase {
         XCTAssertEqual(spy.actions.first, .saveHabitsRequest)
     }
     
+    func test_reduceMoveHabitsToOffset() {
+        state.habits = testModels
+        
+        spy.schedule(
+            sut.reduce(&state, action: .moveHabit(from: .init(integer: 1), to: 0))
+        )
+        
+        XCTAssertEqual(state.habits.first, testModels.last)
+    }
+    
     func test_reduceUpdateHabitAction() {
         state.habits = testModels
         var tempModel = testModels[0]
@@ -142,6 +152,20 @@ final class HabitListDomainTests: XCTestCase {
         _ = sut.reduce(&state, action: .dismissAlert)
         
         XCTAssertFalse(state.isAlert)
+    }
+    
+    func test_reduceAddHabitButtonTap() {
+        _ = sut.reduce(&state, action: .addHabitButtonTap)
+        
+        XCTAssertTrue(state.isShowSheet)
+    }
+    
+    func test_dismissSheet() {
+        state.isShowSheet = true
+        
+        _ = sut.reduce(&state, action: .dismissSheet)
+        
+        XCTAssertFalse(state.isShowSheet)
     }
     
 }

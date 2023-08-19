@@ -22,13 +22,16 @@ public struct HabitListDomain: ReducerDomain {
     public struct State {
         public var habits: [Habit]
         public var isAlert: Bool
+        public var isShowSheet: Bool
         
         public init(
             habits: [Habit] = .init(),
-            isAlert: Bool = false
+            isAlert: Bool = false,
+            isShowSheet: Bool = false
         ) {
             self.habits = habits
             self.isAlert = isAlert
+            self.isShowSheet = isShowSheet
         }
     }
     
@@ -39,8 +42,11 @@ public struct HabitListDomain: ReducerDomain {
         case saveHabitsRequest
         case loadHabitsResponse([Habit])
         case removeHabitAtOffset(IndexSet)
+        case moveHabit(from: IndexSet, to: Int)
         case updateHabit(Habit)
         case dismissAlert
+        case dismissSheet
+        case addHabitButtonTap
         
         public static func == (lhs: HabitListDomain.Action, rhs: HabitListDomain.Action) -> Bool {
             String(describing: lhs) == String(describing: rhs)
@@ -83,11 +89,15 @@ public struct HabitListDomain: ReducerDomain {
             }
             
         case let .loadHabitsResponse(habits):
+            logger.debug("Loaded \(habits.count) habits")
             state.habits = habits
             
         case let .removeHabitAtOffset(offsets):
             state.habits.remove(atOffsets: offsets)
             return run(.saveHabitsRequest)
+            
+        case let .moveHabit(from: offsets, to: index):
+            state.habits.move(fromOffsets: offsets, toOffset: index)
             
         case let .updateHabit(updatedHabit):
             addNew(updatedHabit)(&state.habits)
@@ -95,13 +105,19 @@ public struct HabitListDomain: ReducerDomain {
             
         case .dismissAlert:
             state.isAlert = false
+            
+        case .dismissSheet:
+            state.isShowSheet = false
+            
+        case .addHabitButtonTap:
+            state.isShowSheet = true
         }
         
         return empty()
     }
     
     //MARK: - Preview store
-    static let previewStore = Store(
+    public static let previewStore = Store(
         state: Self.State(),
         reducer: Self(
             loadHabits: { _ in

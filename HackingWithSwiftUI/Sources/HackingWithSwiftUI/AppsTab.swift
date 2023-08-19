@@ -13,6 +13,7 @@ import BetterRest
 import iExpense
 import Moonshot
 import Shared
+import HabitsTracker
 
 struct AppsTab: View {
     
@@ -24,7 +25,10 @@ struct AppsTab: View {
                 NavigationLink("Better rest", destination: BetterRestView())
                 NavigationLink("iExpenses", destination: iExpenseView())
                 NavigationLink("Moonshot", destination: Moonshot())
-                NavigationLink("Drawing", destination: DrawingView())
+ //               NavigationLink("Drawing", destination: DrawingView())
+                NavigationLink("Habit tracker") {
+                    HabitListView(store: HabitListDomain.previewStore)
+                }
             }
             .navigationTitle("Regular Apps")
         }
