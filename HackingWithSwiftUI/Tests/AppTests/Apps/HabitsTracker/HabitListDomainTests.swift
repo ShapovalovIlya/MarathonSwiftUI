@@ -24,11 +24,14 @@ final class HabitListDomainTests: XCTestCase {
             .init(title: "Baz", description: "Baz", count: 1),
             .init(title: "Bar", description: "Bar", count: 2)
         ]
-        sut = .init(loadHabits: { [unowned self] _ in
-            Just(testModels)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        })
+        sut = .init(
+            loadHabits: { [unowned self] _ in
+                Just(testModels)
+                    .setFailureType(to: Error.self)
+                    .eraseToAnyPublisher()
+            },
+            saveHabits: { _ in }
+        )
         state = .init()
         spy = .init()
         testError = URLError(.badURL)
@@ -93,9 +96,12 @@ final class HabitListDomainTests: XCTestCase {
     func test_reduceRemoveHabitsAtOffset() {
         state.habits = testModels
         
-        _ = sut.reduce(&state, action: .removeHabitAtOffset(.init(integer: 1)))
+        spy.schedule(
+            sut.reduce(&state, action: .removeHabitAtOffset(.init(integer: 1)))
+        )
         
         XCTAssertEqual(state.habits.count, testModels.count - 1)
+        XCTAssertEqual(spy.actions.first, .saveHabitsRequest)
     }
     
     func test_reduceUpdateHabitAction() {
@@ -103,10 +109,29 @@ final class HabitListDomainTests: XCTestCase {
         var tempModel = testModels[0]
         tempModel.count = 10
         
-        _ = sut.reduce(&state, action: .updateHabit(tempModel))
+        spy.schedule(
+            sut.reduce(&state, action: .updateHabit(tempModel))
+        )
         
         XCTAssertEqual(state.habits.count, 2)
         XCTAssertEqual(state.habits.first, tempModel)
+        XCTAssertEqual(spy.actions.first, .saveHabitsRequest)
+    }
+    
+    func test_saveHabitRequestEndWithSuccess() {
+        spy.schedule(
+            sut.reduce(&state, action: .saveHabitsRequest)
+        )
+        
+        XCTAssertTrue(spy.actions.isEmpty)
+    }
+    
+    func test_saveHabitRequestEndWithError() {
+        sut = .init(saveHabits: { _ in URLError(.badURL) })
+        
+        spy.schedule(
+            
+        )
     }
     
     func test_dismissAlert() {
@@ -116,4 +141,5 @@ final class HabitListDomainTests: XCTestCase {
         
         XCTAssertFalse(state.isAlert)
     }
+    
 }

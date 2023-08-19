@@ -41,11 +41,6 @@ public struct UserDefaultsClient {
             .eraseToAnyPublisher()
     }
     
-    public func saveData<T: Encodable>(_ type: T) throws {
-        let encoded = try encoder.encode(type)
-        userDefaults.set(encoded, forKey: String(describing: T.self))
-    }
-    
     public func loadData<T: Decodable>(_ type: T.Type) -> AnyPublisher<T, Error> {
         compose(
             loadData(for: String(describing: type)),

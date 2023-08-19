@@ -36,6 +36,7 @@ public struct HabitListDomain: ReducerDomain {
     public enum Action: Equatable {
         case viewAppeared
         case loadHabitsRequest
+        case saveHabitsRequest
         case loadHabitsResponse([Habit])
         case removeHabitAtOffset(IndexSet)
         case updateHabit(Habit)
@@ -48,12 +49,15 @@ public struct HabitListDomain: ReducerDomain {
     
     //MARK: - Dependencies
     private let loadHabits: ([Habit].Type) -> AnyPublisher<[Habit], Error>
+    private let saveHabits: ([Habit]) throws -> Void
     
     //MARK: - init(_:)
     public init(
-        loadHabits: @escaping ([Habit].Type) -> AnyPublisher<[Habit], Error> = UserDefaultsClient.shared.loadData
+        loadHabits: @escaping ([Habit].Type) -> AnyPublisher<[Habit], Error> = UserDefaultsClient.shared.loadData,
+        saveHabits: @escaping ([Habit]) throws -> Void = UserDefaultsClient.shared.saveModel
     ) {
         self.loadHabits = loadHabits
+        self.saveHabits = saveHabits
     }
     
     //MARK: - Reducer
@@ -70,14 +74,19 @@ public struct HabitListDomain: ReducerDomain {
                 .map(Action.loadHabitsResponse)
                 .eraseToAnyPublisher()
             
+        case .saveHabitsRequest:
+            logger.debug("Saving habits")
+            
         case let .loadHabitsResponse(habits):
             state.habits = habits
             
         case let .removeHabitAtOffset(offsets):
             state.habits.remove(atOffsets: offsets)
+            return run(.saveHabitsRequest)
             
         case let .updateHabit(updatedHabit):
             exchange(updatedHabit)(&state.habits)
+            return run(.saveHabitsRequest)
             
         case .dismissAlert:
             state.isAlert = false
@@ -89,11 +98,14 @@ public struct HabitListDomain: ReducerDomain {
     //MARK: - Preview store
     static let previewStore = Store(
         state: Self.State(),
-        reducer: Self(loadHabits: { _ in
-            Just(Habit.sample)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-        })
+        reducer: Self(
+            loadHabits: { _ in
+                Just(Habit.sample)
+                    .setFailureType(to: Error.self)
+                    .eraseToAnyPublisher()
+            },
+            saveHabits: { _ in }
+        )
     )
     
     //MARK: - Live store
