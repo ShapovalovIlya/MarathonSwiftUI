@@ -50,6 +50,7 @@ let package = Package(
         .library(name: "iExpense", targets: ["iExpense"]),
         .library(name: "Moonshot", targets: ["Moonshot"]),
         .library(name: "HabitsTracker", targets: ["HabitsTracker"]),
+        .library(name: "CupcakeCorner", targets: ["CupcakeCorner"]),
     ],
     dependencies: [
         Dependencies.SwiftUDF.package,
@@ -148,6 +149,14 @@ let package = Package(
                 SharedContent,
                 AppDependencies,
                 Dependencies.SwiftFP.target,
+            ]),
+        .target(
+            name: "CupcakeCorner",
+            dependencies: [
+                Dependencies.SwiftFP.target,
+                Dependencies.SwiftUDF.target,
+                AppDependencies,
+                SharedContent
             ]),
         .testTarget(
             name: "AppTests",
