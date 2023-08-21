@@ -62,7 +62,7 @@ let package = Package(
             name: "AppDependencies",
             dependencies: [
                 SharedContent,
-                .product(name: "SwiftFP", package: "SwiftFP"),
+                Dependencies.SwiftFP.target,
             ],
             resources: [
                 .process("Resources")
