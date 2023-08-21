@@ -14,6 +14,7 @@ import iExpense
 import Moonshot
 import Shared
 import HabitsTracker
+import CupcakeCorner
 
 struct AppsTab: View {
     
@@ -29,6 +30,7 @@ struct AppsTab: View {
                 NavigationLink("Habit tracker") {
                     HabitListView()
                 }
+                NavigationLink("Cupcake corner", destination: OrderView())
             }
             .navigationTitle("Regular Apps")
         }

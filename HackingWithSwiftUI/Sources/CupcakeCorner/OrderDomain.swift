@@ -45,6 +45,10 @@ public struct OrderDomain: ReducerDomain {
     //MARK: - Action
     public enum Action: Equatable {
         case setCupcakeType(State.CupcakeType)
+        case setQuantity(Int)
+        case toggleSpecialRequest(Bool)
+        case toggleExtraFrosting(Bool)
+        case toggleAddSprinkles(Bool)
     }
     
     //MARK: - Dependencies
@@ -57,6 +61,22 @@ public struct OrderDomain: ReducerDomain {
         switch action {
         case let .setCupcakeType(type):
             state.type = type
+            
+        case let .setQuantity(quantity):
+            state.quantity = quantity
+            
+        case let .toggleSpecialRequest(enabled):
+            state.specialRequestEnabled = enabled
+            if !state.specialRequestEnabled {
+                state.extraFrosting = false
+                state.addSprinkles = false
+            }
+            
+        case let .toggleExtraFrosting(enabled):
+            state.extraFrosting = enabled
+            
+        case let .toggleAddSprinkles(enabled):
+            state.addSprinkles = enabled
         }
         
         return empty()
