@@ -21,18 +21,18 @@ public struct OrderDomain: ReducerDomain {
     
     //MARK: - State
     public struct Order: Codable {
-        var type: Int
-        var quantity: Int
-        var specialRequestEnabled: Bool
-        var extraFrosting: Bool
-        var addSprinkles: Bool
+        public var type: CupcakeType
+        public var quantity: Int
+        public var specialRequestEnabled: Bool
+        public var extraFrosting: Bool
+        public var addSprinkles: Bool
         
         public init(
-        type: Int = 0,
-        quantity: Int = 3,
-        specialRequestEnabled: Bool = false,
-        extraFrosting: Bool = false,
-        addSprinkles: Bool = false
+            type: CupcakeType = .vanilla,
+            quantity: Int = 3,
+            specialRequestEnabled: Bool = false,
+            extraFrosting: Bool = false,
+            addSprinkles: Bool = false
         ) {
             self.type = type
             self.quantity = quantity
@@ -44,7 +44,7 @@ public struct OrderDomain: ReducerDomain {
     
     //MARK: - Action
     public enum Action: Equatable {
-        
+        case setCupcakeType(State.CupcakeType)
     }
     
     //MARK: - Dependencies
@@ -54,6 +54,10 @@ public struct OrderDomain: ReducerDomain {
     
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
+        switch action {
+        case let .setCupcakeType(type):
+            state.type = type
+        }
         
         return empty()
     }
@@ -72,4 +76,14 @@ public extension OrderDomain {
         state: Self.State(),
         reducer: Self()
     )
+}
+
+//MARK: - Cupcake type
+public extension OrderDomain.Order {
+    enum CupcakeType: String, Codable, CaseIterable {
+        case vanilla
+        case strawberry
+        case chocolate
+        case rainbow
+    }
 }

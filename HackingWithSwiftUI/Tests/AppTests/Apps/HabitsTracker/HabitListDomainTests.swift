@@ -30,7 +30,7 @@ final class HabitListDomainTests: XCTestCase {
                     .setFailureType(to: Error.self)
                     .eraseToAnyPublisher()
             },
-            saveHabits: { _ in }
+            saveHabits: { _,_  in }
         )
         state = .init()
         spy = .init()
@@ -137,7 +137,7 @@ final class HabitListDomainTests: XCTestCase {
     }
     
     func test_saveHabitRequestEndWithError() {
-        sut = .init(saveHabits: { _ in throw URLError(.badURL) })
+        sut = .init(saveHabits: { _,_  in throw URLError(.badURL) })
         
         spy.schedule(
             sut.reduce(&state, action: .saveHabitsRequest)

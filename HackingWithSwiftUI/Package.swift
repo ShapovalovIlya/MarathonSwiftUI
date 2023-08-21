@@ -169,7 +169,8 @@ let package = Package(
                 "MultiplicationTables",
                 "iExpense",
                 "Moonshot",
-                "HabitsTracker"
+                "HabitsTracker",
+                "CupcakeCorner"
             ]),
     ]
 )
