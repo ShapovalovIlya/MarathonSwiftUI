@@ -46,6 +46,12 @@ public struct OrderView: View {
                     }
                 }
                 
+                Section {
+                    NavigationLink("Delivery details") {
+                        AddressView(order: store.state)
+                    }
+                }
+                
             }
             .navigationTitle("Cupcake order")
         }
