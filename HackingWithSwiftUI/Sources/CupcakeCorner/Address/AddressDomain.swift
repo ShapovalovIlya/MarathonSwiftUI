@@ -17,6 +17,13 @@ public struct AddressDomain: ReducerDomain {
         public var city: String
         public var zip: String
         
+        public var hasValidAddress: Bool {
+            if name.isEmpty || streetAddress.isEmpty || city.isEmpty || zip.isEmpty {
+                return false
+            }
+            return true
+        }
+        
         public init(
             name: String = .init(),
             streetAddress: String = .init(),

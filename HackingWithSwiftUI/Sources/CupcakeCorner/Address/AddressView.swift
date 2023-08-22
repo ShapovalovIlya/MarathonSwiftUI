@@ -36,6 +36,7 @@ struct AddressView: View {
                 Button("Check out") {
                     checkoutButtonTap(store.state)
                 }
+                .disabled(!store.hasValidAddress)
             }
         }
     }

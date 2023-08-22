@@ -40,6 +40,7 @@ public struct CupcakeRootView: View {
         }
         .navigationTitle(store.userScenario.navigationTitle)
         .navigationBarBackButtonHidden(store.userScenario != .order)
+        .navigationBarTitleDisplayMode(setNavTitleMode())
         .toolbar {
             if store.userScenario != .order {
                 BackButton {
@@ -51,6 +52,14 @@ public struct CupcakeRootView: View {
     
     public init(store: StoreOf<RootDomain> = RootDomain.liveStore) {
         self._store = StateObject(wrappedValue: store)
+    }
+    
+    private func setNavTitleMode() -> NavigationBarItem.TitleDisplayMode {
+        switch store.userScenario {
+        case .order: return .large
+        case .address: return .inline
+        case .checkout: return .large
+        }
     }
 }
 
