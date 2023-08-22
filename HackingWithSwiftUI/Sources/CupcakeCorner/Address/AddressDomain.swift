@@ -11,7 +11,7 @@ import SwiftUDF
 
 public struct AddressDomain: ReducerDomain {
     //MARK: - State
-    public struct State {
+    public struct State: Equatable {
         public var name: String
         public var streetAddress: String
         public var city: String

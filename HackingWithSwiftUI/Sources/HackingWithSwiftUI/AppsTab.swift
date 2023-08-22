@@ -30,7 +30,7 @@ struct AppsTab: View {
                 NavigationLink("Habit tracker") {
                     HabitListView()
                 }
-                NavigationLink("Cupcake corner", destination: OrderView())
+                NavigationLink("Cupcake corner", destination: CupcakeRootView())
             }
             .navigationTitle("Regular Apps")
         }

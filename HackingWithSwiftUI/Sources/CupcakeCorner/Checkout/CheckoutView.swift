@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CheckoutView: View {
+//    let order: OrderDomain.Order
     
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)

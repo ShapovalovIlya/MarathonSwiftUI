@@ -20,7 +20,7 @@ public struct OrderDomain: ReducerDomain {
     )
     
     //MARK: - State
-    public struct Order: Codable {
+    public struct Order: Codable, Equatable {
         public var type: CupcakeType
         public var quantity: Int
         public var specialRequestEnabled: Bool

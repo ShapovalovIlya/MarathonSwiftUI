@@ -10,7 +10,7 @@ import SwiftUDF
 
 struct AddressView: View {
     @StateObject private var store: StoreOf<AddressDomain>
-    private let order: OrderDomain.Order
+    private let checkoutButtonTap: (AddressDomain.State) -> Void
     
     var body: some View {
         Form {
@@ -33,21 +33,20 @@ struct AddressView: View {
                 )
             }
             Section {
-                NavigationLink("Check out") {
-                    CheckoutView()
+                Button("Check out") {
+                    checkoutButtonTap(store.state)
                 }
             }
         }
-        .navigationTitle("Delivery details")
-        .navigationBarTitleDisplayMode(.inline)
     }
     
     init(
-        store: StoreOf<AddressDomain> = AddressDomain.previewStore,
-        order: OrderDomain.Order
+        address: AddressDomain.State,
+        checkoutButtonTap: @escaping (AddressDomain.State) -> Void
     ) {
+        let store = Store(state: address, reducer: AddressDomain())
         self._store = StateObject(wrappedValue: store)
-        self.order = order
+        self.checkoutButtonTap = checkoutButtonTap
     }
 }
 
@@ -82,5 +81,5 @@ private extension AddressView {
 }
 
 #Preview {
-    AddressView(order: .init())
+    AddressView(address: .init(), checkoutButtonTap: { _ in })
 }

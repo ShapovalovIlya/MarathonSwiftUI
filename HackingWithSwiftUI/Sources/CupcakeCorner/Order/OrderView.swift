@@ -10,56 +10,59 @@ import SwiftUDF
 
 public struct OrderView: View {
     @StateObject private var store: StoreOf<OrderDomain>
+    private let deliveryButtonTap: (OrderDomain.Order) -> Void
     
     public var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    Picker(
-                        "Select your cake",
-                        selection: bindCakeType(),
-                        content: cakeTypes
-                    )
-                    
-                    Stepper(
-                        "Number of cakes \(store.quantity)",
-                        value: bindQuantity(),
-                        in: 3...20
-                    )
-                }
+        Form {
+            Section {
+                Picker(
+                    "Select your cake",
+                    selection: bindCakeType(),
+                    content: cakeTypes
+                )
                 
-                Section {
-                    Toggle(
-                        "Any special requests?",
-                        isOn: bindSpecialRequest()
-                    )
-                    
-                    if store.specialRequestEnabled {
-                        Toggle(
-                            "Add extra frosting",
-                            isOn: bindExtraFrosting()
-                        )
-                        Toggle(
-                            "Add extra sprinkles",
-                            isOn: bindExtraSprinkles()
-                        )
-                    }
-                }
-                
-                Section {
-                    NavigationLink("Delivery details") {
-                        AddressView(order: store.state)
-                    }
-                }
-                
+                Stepper(
+                    "Number of cakes \(store.quantity)",
+                    value: bindQuantity(),
+                    in: 3...20
+                )
             }
-            .navigationTitle("Cupcake order")
+            
+            Section {
+                Toggle(
+                    "Any special requests?",
+                    isOn: bindSpecialRequest()
+                )
+                
+                if store.specialRequestEnabled {
+                    Toggle(
+                        "Add extra frosting",
+                        isOn: bindExtraFrosting()
+                    )
+                    Toggle(
+                        "Add extra sprinkles",
+                        isOn: bindExtraSprinkles()
+                    )
+                }
+            }
+            
+            Section {
+                Button("Delivery details") {
+                    deliveryButtonTap(store.state)
+                }
+            }
+            
         }
     }
     
     //MARK: - init(_:)
-    public init(store: StoreOf<OrderDomain> = OrderDomain.liveStore) {
+    public init(
+        order: OrderDomain.Order,
+        deliveryButtonTap: @escaping (OrderDomain.Order) -> Void
+    ) {
+        let store = Store(state: order, reducer: OrderDomain())
         self._store = StateObject(wrappedValue: store)
+        self.deliveryButtonTap = deliveryButtonTap
     }
     
 }
@@ -109,5 +112,5 @@ private extension OrderView {
 }
 
 #Preview {
-    OrderView(store: OrderDomain.previewStore)
+    OrderView(order: .init(), deliveryButtonTap: { _ in })
 }
