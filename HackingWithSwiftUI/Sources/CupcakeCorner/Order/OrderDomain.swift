@@ -27,6 +27,19 @@ public struct OrderDomain: ReducerDomain {
         public var extraFrosting: Bool
         public var addSprinkles: Bool
         
+        public var cost: Double {
+            var cost = Double(quantity) * 2
+            cost += type.cost
+            if extraFrosting {
+                cost += Double(quantity)
+            }
+            if addSprinkles {
+                cost += Double(quantity) / 2
+            }
+            
+            return cost
+        }
+        
         public init(
             type: CupcakeType = .vanilla,
             quantity: Int = 3,
@@ -105,5 +118,14 @@ public extension OrderDomain.Order {
         case strawberry
         case chocolate
         case rainbow
+        
+        var cost: Double {
+            switch self {
+            case .vanilla: return 0.5
+            case .strawberry: return 0.75
+            case .chocolate: return 1.0
+            case .rainbow: return 1.25
+            }
+        }
     }
 }

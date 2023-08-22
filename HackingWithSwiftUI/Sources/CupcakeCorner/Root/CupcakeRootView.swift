@@ -32,8 +32,11 @@ public struct CupcakeRootView: View {
                     .transition(transition)
                     
                 case .checkout:
-                    CheckoutView()
-                        .transition(transition)
+                    CheckoutView(
+                        cost: store.order.cost,
+                        placeOrderButtonTap: {  }
+                    )
+                    .transition(transition)
                 }
             }
             .animation(.easeInOut, value: store.userScenario)
@@ -58,7 +61,7 @@ public struct CupcakeRootView: View {
         switch store.userScenario {
         case .order: return .large
         case .address: return .inline
-        case .checkout: return .large
+        case .checkout: return .inline
         }
     }
 }

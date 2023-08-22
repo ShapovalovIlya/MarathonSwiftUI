@@ -8,13 +8,37 @@
 import SwiftUI
 
 struct CheckoutView: View {
-//    let order: OrderDomain.Order
+    private let imageURL: URL? = .init(string: "https://hws.dev/img/cupcakes@3x.jpg")
+    
+    let cost: Double
+    let placeOrderButtonTap: () -> Void
     
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ScrollView {
+            VStack {
+                AsyncImage(
+                    url: imageURL,
+                    content: configure(image:),
+                    placeholder: ProgressView.init
+                )
+                .frame(height: 233)
+                
+                Text("Your total is \(cost, format: .currency(code: "USD"))")
+                    .font(.title)
+                
+                Button("Place order", action: placeOrderButtonTap)
+                    .padding()
+            }
+        }
+    }
+    
+    private func configure(image: Image) -> some View {
+        image
+            .resizable()
+            .scaledToFit()
     }
 }
 
 #Preview {
-    CheckoutView()
+    CheckoutView(cost: 1, placeOrderButtonTap: { })
 }
