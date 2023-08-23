@@ -7,25 +7,27 @@
 
 import Foundation
 
-struct Endpoint {
+public struct Endpoint {
     let path: String
     let queryItems: [URLQueryItem]
     
     var url: URL? {
         var components = URLComponents()
         components.scheme = "https"
-        components.host = "api.github.com"
+        components.host = "reqres.in/api"
+        components.path = path
         components.queryItems = queryItems
         
         return components.url
     }
     
-    static func search(matching query: String) -> Endpoint {
-        .init(
-            path: "/search/repositories",
-            queryItems: [
-                URLQueryItem(name: "q", value: query),
-                
-            ])
+    init(
+        path: String,
+        queryItems: [URLQueryItem] = .init()
+    ) {
+        self.path = path
+        self.queryItems = queryItems
     }
+    
+    public static let sendOrder: Self = .init(path: "cupcakes")
 }
