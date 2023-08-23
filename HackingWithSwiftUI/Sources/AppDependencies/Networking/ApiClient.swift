@@ -8,6 +8,7 @@
 import Foundation
 import SwiftFP
 import Combine
+import OSLog
 
 // (URL) -> URLRequest
 // (URLRequest) -> URLSession
@@ -19,6 +20,11 @@ import Combine
 // (URL) -> AnyPublisher<T, Error>
 
 public struct ApiClient {
+    private let logger = Logger(
+        subsystem: Bundle.module.bundleIdentifier!,
+        category: String(describing: Self.self)
+    )
+    
     typealias Request = (URLRequest) -> URLRequest
     public typealias ResponsePublisher = AnyPublisher<(data: Data, response: URLResponse), Error>
     
@@ -30,9 +36,10 @@ public struct ApiClient {
         self.session = session
     }
     
-    public func send(order: Encodable) -> AnyPublisher<Data, Error> {
+    public func send<T: Decodable>(order: Encodable) -> AnyPublisher<T, Error> {
         postRequest(content: order, endpoint: .sendOrder)
             .map(\.data)
+            .decode(type: T.self, decoder: JSONDecoder())
             .eraseToAnyPublisher()
     }
     

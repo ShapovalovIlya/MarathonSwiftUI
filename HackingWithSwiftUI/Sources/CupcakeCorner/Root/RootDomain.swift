@@ -8,21 +8,30 @@
 import Foundation
 import SwiftUDF
 import Combine
+import AppDependencies
 
 public struct RootDomain: ReducerDomain {
+    public typealias SendOrderPublisher = (OrderDomain.Order) -> AnyPublisher<OrderDomain.Order, Error>
+    
     //MARK: - State
     public struct State {
         public var order: OrderDomain.Order
         public var address: AddressDomain.State
+        public var confirmationMessage: String
+        public var showConfirmation: Bool
         public var userScenario: Scenario
         
         public init(
             order: OrderDomain.Order = .init(),
             address: AddressDomain.State = .init(),
+            confirmationMessage: String = .init(),
+            showConfirmation: Bool = false,
             userScenario: Scenario = .init()
         ) {
             self.order = order
             self.address = address
+            self.confirmationMessage = confirmationMessage
+            self.showConfirmation = showConfirmation
             self.userScenario = userScenario
         }
     }
@@ -32,13 +41,26 @@ public struct RootDomain: ReducerDomain {
         case viewAppeared
         case deliveryButtonTap(OrderDomain.Order)
         case checkoutButtonTap(AddressDomain.State)
+        case placeOrderButtonTap
         case backButtonTap
+        case sendOrderRequest
+        case sendOrderResponse(Result<OrderDomain.Order, Error>)
+        case dismissAlert
+        
+        public static func == (lhs: RootDomain.Action, rhs: RootDomain.Action) -> Bool {
+            String(describing: lhs) == String(describing: rhs)
+        }
     }
     
     //MARK: - Dependencies
+    private let sendOrder: SendOrderPublisher
     
     //MARK: - init(_:)
-    public init() {}
+    public init(
+        sendOrder: @escaping SendOrderPublisher = ApiClient.shared.send(order:)
+    ) {
+        self.sendOrder = sendOrder
+    }
     
     //MARK: - Reducer
     public func reduce(_ state: inout State, action: Action) -> AnyPublisher<Action, Never> {
@@ -54,6 +76,22 @@ public struct RootDomain: ReducerDomain {
             state.address = address
             state.userScenario = .checkout
             
+        case .placeOrderButtonTap:
+            return run(.sendOrderRequest)
+            
+        case .sendOrderRequest:
+            return sendOrder(state.order)
+                .map(transformToSuccessAction)
+                .catch(catchToFailAction)
+                .eraseToAnyPublisher()
+            
+        case let .sendOrderResponse(.success(order)):
+            state.confirmationMessage = "Your order for \(order.quantity)x \(order.type.rawValue) cupcakes is on its way!"
+            state.showConfirmation = true
+            
+        case let .sendOrderResponse(.failure(error)):
+            print(error.localizedDescription)
+            
         case .backButtonTap:
             switch state.userScenario {
             case .order:
@@ -64,6 +102,9 @@ public struct RootDomain: ReducerDomain {
                 state.userScenario = .address
             }
             
+        case .dismissAlert:
+            state.showConfirmation = false
+            
         }
         return empty()
     }
@@ -71,13 +112,28 @@ public struct RootDomain: ReducerDomain {
     //MARK: - previewStore
     static let previewStore = Store(
         state: Self.State(),
-        reducer: Self()
+        reducer: Self(sendOrder: { order in
+            Just(order)
+                .setFailureType(to: Error.self)
+                .eraseToAnyPublisher()
+        })
     )
     
     public static let liveStore = Store(
         state: Self.State(),
         reducer: Self()
     )
+}
+
+//MARK: - Private methods
+private extension RootDomain {
+    func transformToSuccessAction(_ order: OrderDomain.Order) -> Action {
+        .sendOrderResponse(.success(order))
+    }
+    
+    func catchToFailAction(_ error: Error) -> Just<Action> {
+        .init(.sendOrderResponse(.failure(error)))
+    }
 }
 
 //MARK: - Scenario

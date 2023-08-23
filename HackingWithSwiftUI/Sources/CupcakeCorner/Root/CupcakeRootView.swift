@@ -13,6 +13,7 @@ public struct CupcakeRootView: View {
     
     private let transition: AnyTransition = .slide
     
+    //MARK: - Body
     public var body: some View {
         VStack {
             Group {
@@ -34,7 +35,7 @@ public struct CupcakeRootView: View {
                 case .checkout:
                     CheckoutView(
                         cost: store.order.cost,
-                        placeOrderButtonTap: {  }
+                        placeOrderButtonTap: { store.send(.placeOrderButtonTap) }
                     )
                     .transition(transition)
                 }
@@ -51,12 +52,23 @@ public struct CupcakeRootView: View {
                 }
             }
         }
+        .alert(
+            "Thank you!",
+            isPresented: bindConfirmation()
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(store.confirmationMessage)
+        }
+
     }
     
+    //MARK: - init(_:)
     public init(store: StoreOf<RootDomain> = RootDomain.liveStore) {
         self._store = StateObject(wrappedValue: store)
     }
     
+    //MARK: - Private methods
     private func setNavTitleMode() -> NavigationBarItem.TitleDisplayMode {
         switch store.userScenario {
         case .order: return .large
@@ -64,8 +76,16 @@ public struct CupcakeRootView: View {
         case .checkout: return .inline
         }
     }
+    
+    private func bindConfirmation() -> Binding<Bool> {
+        Binding(
+            get: { store.showConfirmation },
+            set: { _ in store.send(.dismissAlert) }
+        )
+    }
 }
 
+//MARK: - Preview
 #Preview {
     CupcakeRootView(store: RootDomain.previewStore)
 }
