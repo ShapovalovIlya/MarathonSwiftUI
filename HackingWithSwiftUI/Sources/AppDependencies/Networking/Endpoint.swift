@@ -11,14 +11,17 @@ public struct Endpoint {
     let path: String
     let queryItems: [URLQueryItem]
     
-    var url: URL? {
+    var url: URL {
         var components = URLComponents()
         components.scheme = "https"
         components.host = "reqres.in/api"
         components.path = path
         components.queryItems = queryItems
         
-        return components.url
+        guard let url = components.url else {
+            preconditionFailure("Unable to create url from \(components)")
+        }
+        return url
     }
     
     init(

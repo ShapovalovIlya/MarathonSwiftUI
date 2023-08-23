@@ -30,10 +30,16 @@ public struct ApiClient {
         self.session = session
     }
     
+    public func send(order: Encodable) -> AnyPublisher<Data, Error> {
+        postRequest(content: order, endpoint: .sendOrder)
+            .map(\.data)
+            .eraseToAnyPublisher()
+    }
+    
     public func postRequest(content: Encodable, endpoint: Endpoint) -> ResponsePublisher {
         compose(
             configRequest(method: .POST),
-            pairWith(content),
+            addContentData(content),
             uploadTaskPublisher(session: session)
         )(endpoint)
     }
@@ -55,16 +61,13 @@ private extension ApiClient {
     }
     
     func configSession(_ config: URLSessionConfiguration = .default) -> URLSession {
-        var config = config
+     //   var config = config
         return URLSession(configuration: config)
     }
     
-    func makeRequest(_ method: HTTPMethod) -> (URL?) -> URLRequest {
+    func makeRequest(_ method: HTTPMethod) -> (URL) -> URLRequest {
         {
-            guard let url = $0 else {
-                fatalError("Invalid url: \(String(describing: $0))")
-            }
-            var request = URLRequest(url: url)
+            var request = URLRequest(url: $0)
             request.httpMethod = method.rawValue
             return request
         }
@@ -78,7 +81,7 @@ private extension ApiClient {
         }
     }
     
-    func pairWith<T: Encodable>(_ content: T) -> (URLRequest) -> (URLRequest, Data) {
+    func addContentData<T: Encodable>(_ content: T) -> (URLRequest) -> (URLRequest, Data) {
         {
             do {
                 let encoded = try JSONEncoder().encode(content)
