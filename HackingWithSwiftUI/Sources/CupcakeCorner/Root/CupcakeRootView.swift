@@ -58,7 +58,7 @@ public struct CupcakeRootView: View {
         ) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(store.confirmationMessage)
+            Text(store.alertMessage)
         }
 
     }
@@ -79,13 +79,17 @@ public struct CupcakeRootView: View {
     
     private func bindConfirmation() -> Binding<Bool> {
         Binding(
-            get: { store.showConfirmation },
+            get: { store.showAlert },
             set: { _ in store.send(.dismissAlert) }
         )
     }
 }
 
 //MARK: - Preview
-#Preview {
+#Preview("Initial") {
     CupcakeRootView(store: RootDomain.previewStore)
+}
+
+#Preview("Alert") {
+    CupcakeRootView(store: RootDomain.previewAlertStore)
 }

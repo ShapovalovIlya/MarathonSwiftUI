@@ -17,21 +17,21 @@ public struct RootDomain: ReducerDomain {
     public struct State {
         public var order: OrderDomain.Order
         public var address: AddressDomain.State
-        public var confirmationMessage: String
-        public var showConfirmation: Bool
+        public var alertMessage: String
+        public var showAlert: Bool
         public var userScenario: Scenario
         
         public init(
             order: OrderDomain.Order = .init(),
             address: AddressDomain.State = .init(),
-            confirmationMessage: String = .init(),
-            showConfirmation: Bool = false,
+            alertMessage: String = .init(),
+            showAlert: Bool = false,
             userScenario: Scenario = .init()
         ) {
             self.order = order
             self.address = address
-            self.confirmationMessage = confirmationMessage
-            self.showConfirmation = showConfirmation
+            self.alertMessage = alertMessage
+            self.showAlert = showAlert
             self.userScenario = userScenario
         }
     }
@@ -86,11 +86,13 @@ public struct RootDomain: ReducerDomain {
                 .eraseToAnyPublisher()
             
         case let .sendOrderResponse(.success(order)):
-            state.confirmationMessage = "Your order for \(order.quantity)x \(order.type.rawValue) cupcakes is on its way!"
-            state.showConfirmation = true
+            state.alertMessage = "Your order for \(order.quantity)x \(order.type.rawValue) cupcakes is on its way!"
+            state.showAlert = true
             
         case let .sendOrderResponse(.failure(error)):
             print(error.localizedDescription)
+            state.alertMessage = "Unable to send order. Try again later."
+            state.showAlert = true
             
         case .backButtonTap:
             switch state.userScenario {
@@ -103,7 +105,7 @@ public struct RootDomain: ReducerDomain {
             }
             
         case .dismissAlert:
-            state.showConfirmation = false
+            state.showAlert = false
             
         }
         return empty()
@@ -117,6 +119,11 @@ public struct RootDomain: ReducerDomain {
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
         })
+    )
+    
+    static let previewAlertStore = Store(
+        state: Self.State(alertMessage: "Some alert message!", showAlert: true),
+        reducer: Self()
     )
     
     public static let liveStore = Store(

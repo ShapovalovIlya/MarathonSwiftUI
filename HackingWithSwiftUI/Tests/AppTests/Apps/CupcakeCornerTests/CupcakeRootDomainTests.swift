@@ -138,21 +138,31 @@ final class CupcakeRootDomainTests: XCTestCase {
         XCTAssertEqual(spy.actions.first, .sendOrderResponse(.failure(testError)))
     }
     
-    func test_reduceSuccessOrderResponce() {
+    func test_reduceSuccessOrderResponse() {
         _ = sut.reduce(&state, action: .sendOrderResponse(.success(testOrder)))
         
         XCTAssertEqual(
-            state.confirmationMessage,
+            state.alertMessage,
             "Your order for \(testOrder.quantity)x \(testOrder.type.rawValue) cupcakes is on its way!"
         )
-        XCTAssertTrue(state.showConfirmation)
+        XCTAssertTrue(state.showAlert)
+    }
+    
+    func test_reduceFailOrderResponse() {
+        _ = sut.reduce(&state, action: .sendOrderResponse(.failure(testError)))
+        
+        XCTAssertEqual(
+            state.alertMessage,
+            "Unable to send order. Try again later."
+        )
+        XCTAssertTrue(state.showAlert)
     }
     
     func test_dismissAlert() {
-        state.showConfirmation
+        state.showAlert = true
         
         _ = sut.reduce(&state, action: .dismissAlert)
         
-        XCTAssertFalse(state.showConfirmation)
+        XCTAssertFalse(state.showAlert)
     }
 }
