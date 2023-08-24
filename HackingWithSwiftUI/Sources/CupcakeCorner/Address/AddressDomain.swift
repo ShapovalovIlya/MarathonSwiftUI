@@ -55,13 +55,19 @@ public struct AddressDomain: ReducerDomain {
             state.name = name
             
         case let .setStreetAddress(address):
-            state.streetAddress = address
+            if checkIsNotEmpty(address) {
+                state.streetAddress = address
+            }
             
         case let .setCity(city):
-            state.city = city
+            if checkIsNotEmpty(city) {
+                state.city = city
+            }
             
         case let .setZip(zip):
-            state.zip = zip
+            if checkIsNotEmpty(zip) {
+                state.zip = zip
+            }
         }
         
         return empty()
@@ -72,4 +78,8 @@ public struct AddressDomain: ReducerDomain {
         state: Self.State(),
         reducer: Self()
     )
+    
+    private func checkIsNotEmpty(_ text: String) -> Bool {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 }
