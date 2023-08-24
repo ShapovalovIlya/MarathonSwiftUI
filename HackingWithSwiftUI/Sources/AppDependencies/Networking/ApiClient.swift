@@ -46,8 +46,8 @@ public struct ApiClient {
     public func postRequest(content: Encodable, endpoint: Endpoint) -> ResponsePublisher {
         compose(
             configRequest(method: .POST),
-            addContentData(content),
-            uploadTaskPublisher(session: session)
+            addData(from: content),
+            dataTaskPublisher(session: session)
         )(endpoint)
     }
 }
@@ -88,39 +88,24 @@ private extension ApiClient {
         }
     }
     
-    func addContentData<T: Encodable>(_ content: T) -> (URLRequest) -> (URLRequest, Data) {
+    func addData(from model: Encodable) -> Request {
         {
+            var request = $0
             do {
-                let encoded = try JSONEncoder().encode(content)
-                return ($0, encoded)
+                request.httpBody = try JSONEncoder().encode(model)
+                return request
             } catch {
-                fatalError("Failed to encode model: \(error.localizedDescription)")
+                preconditionFailure("Unable to encode \(String(describing: model)). Reason: \(error.localizedDescription)")
             }
         }
     }
     
-    func dataTaskPublisher(session: URLSession) -> (URLRequest) -> ResponsePublisher {
+    func dataTaskPublisher(session: URLSession = .shared) -> (URLRequest) -> ResponsePublisher {
         {
             URLSession
                 .DataTaskPublisher(request: $0, session: session)
                 .mapError { $0 }
                 .eraseToAnyPublisher()
-        }
-    }
-    
-    func uploadTaskPublisher(session: URLSession) -> (URLRequest, Data) -> ResponsePublisher {
-        { request, data in
-            Future<(data: Data, response: URLResponse), Error> { promise in
-                Task {
-                    do {
-                        let result = try await session.upload(for: request, from: data)
-                        promise(.success(result))
-                    } catch {
-                        promise(.failure(error))
-                    }
-                }
-            }
-            .eraseToAnyPublisher()
         }
     }
     
