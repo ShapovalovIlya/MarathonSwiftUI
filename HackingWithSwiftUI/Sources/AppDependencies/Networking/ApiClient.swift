@@ -37,18 +37,21 @@ public struct ApiClient {
     }
     
     public func send<T: Decodable>(order: Encodable) -> AnyPublisher<T, Error> {
-        postRequest(content: order, endpoint: .sendOrder)
-            .map(\.data)
-            .decode(type: T.self, decoder: JSONDecoder())
-            .eraseToAnyPublisher()
+        postRequest(
+            url: CupcakesEndpoint.sendOrder.url,
+            content: order
+        )
+        .map(\.data)
+        .decode(type: T.self, decoder: JSONDecoder())
+        .eraseToAnyPublisher()
     }
     
-    public func postRequest(content: Encodable, endpoint: Endpoint) -> ResponsePublisher {
+    public func postRequest(url: URL, content: Encodable) -> ResponsePublisher {
         compose(
             configRequest(method: .POST),
             addData(from: content),
             dataTaskPublisher(session: session)
-        )(endpoint)
+        )(url)
     }
 }
 
@@ -58,18 +61,13 @@ private extension ApiClient {
         case POST
     }
     
-    func configRequest(method: HTTPMethod) -> (Endpoint) -> URLRequest {
+    func configRequest(method: HTTPMethod) -> (URL) -> URLRequest {
         {
             compose(
                 makeRequest(method),
                 setHeader("Content-Type", value: "application/json")
-            )($0.url)
+            )($0)
         }
-    }
-    
-    func configSession(_ config: URLSessionConfiguration = .default) -> URLSession {
-     //   var config = config
-        return URLSession(configuration: config)
     }
     
     func makeRequest(_ method: HTTPMethod) -> (URL) -> URLRequest {

@@ -1,5 +1,5 @@
 //
-//  Endpoint.swift
+//  CupcakesEndpoint.swift
 //
 //
 //  Created by Илья Шаповалов on 20.08.2023.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Endpoint {
+public struct CupcakesEndpoint {
     let path: String
     let queryItems: [URLQueryItem]
     
