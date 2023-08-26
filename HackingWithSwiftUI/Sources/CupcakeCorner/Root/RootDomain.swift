@@ -57,7 +57,7 @@ public struct RootDomain: ReducerDomain {
     
     //MARK: - init(_:)
     public init(
-        sendOrder: @escaping SendOrderPublisher = ApiClient.shared.send(order:)
+        sendOrder: @escaping SendOrderPublisher = ApiClient().send(order:)
     ) {
         self.sendOrder = sendOrder
     }

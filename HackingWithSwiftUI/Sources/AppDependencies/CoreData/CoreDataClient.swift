@@ -10,19 +10,26 @@ import Combine
 import CoreData
 import OSLog
 
-public final class CoreDataClient {
+public struct CoreDataClient {
+    public var fetchStudents: () -> AnyPublisher<[Student], Error>
+    
+    public static var live: CoreDataClient {
+        let storage = CoreDataStorage()
+        
+        return .init(fetchStudents: storage.fetchStudents)
+    }
+}
+
+private final class CoreDataStorage {
     //MARK: - Private properties
     private let logger = Logger(
         subsystem: Bundle.module.bundleIdentifier!,
-        category: String(describing: CoreDataClient.self)
+        category: String(describing: CoreDataStorage.self)
     )
     private let container: NSPersistentContainer
     
-    //MARK: - Shared
-    public static let shared = CoreDataClient()
-    
     //MARK: - init(_:)
-    private init() {
+    init() {
         guard
             let modelURL = Bundle.module.url(forResource: "Bookworm", withExtension: "momd"),
             let model = NSManagedObjectModel(contentsOf: modelURL)
@@ -36,10 +43,15 @@ public final class CoreDataClient {
                 self.logger.error("Failed to load: \(error.localizedDescription)")
             }
         }
+        logger.debug("Initialized")
+    }
+    
+    deinit {
+        logger.debug("Deinitialized")
     }
     
     //MARK: - Public methods
-    public func fetchStudents() -> AnyPublisher<[Student], Error> {
+    func fetchStudents() -> AnyPublisher<[Student], Error> {
         let fetchRequest: NSFetchRequest<Student> = Student.fetchRequest()
         return Future<[Student], Error>{ [weak self] promise in
             guard let self else { return }
