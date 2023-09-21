@@ -1,5 +1,5 @@
 //
-//  CoreDataClient.swift
+//  BookwormStorage.swift
 //
 //
 //  Created by Илья Шаповалов on 25.08.2023.
@@ -10,23 +10,27 @@ import Combine
 import CoreData
 import OSLog
 
-public struct CoreDataClient {
+public struct BookwormStorage {
     public var fetchStudents: () -> AnyPublisher<[Student], Error>
     
-    public static var live: CoreDataClient {
-        let storage = CoreDataStorage()
+    public static var live: BookwormStorage {
+        let storage = BookwormProvider()
         
-        return .init(fetchStudents: storage.fetchStudents)
+        return .init(
+            fetchStudents: storage.fetchStudents
+        )
     }
 }
 
-private final class CoreDataStorage {
+
+private final class BookwormProvider {
     //MARK: - Private properties
     private let logger = Logger(
         subsystem: Bundle.module.bundleIdentifier!,
-        category: String(describing: CoreDataStorage.self)
+        category: String(describing: BookwormProvider.self)
     )
     private let container: NSPersistentContainer
+    private let repository: CoreDataRepository<Student>
     
     //MARK: - init(_:)
     init() {
@@ -38,30 +42,25 @@ private final class CoreDataStorage {
         }
         
         container = NSPersistentContainer(name: "Bookworm", managedObjectModel: model)
-        container.loadPersistentStores { description, error in
+        repository = .init(context: container.viewContext)
+        
+        container.loadPersistentStores { _, error in
             if let error = error {
                 self.logger.error("Failed to load: \(error.localizedDescription)")
             }
         }
-        logger.debug("Initialized")
+        
+        logger.debug(#function)
     }
     
+    //MARK: - deinit
     deinit {
-        logger.debug("Deinitialized")
+        logger.debug(#function)
     }
     
     //MARK: - Public methods
     func fetchStudents() -> AnyPublisher<[Student], Error> {
-        let fetchRequest: NSFetchRequest<Student> = Student.fetchRequest()
-        return Future<[Student], Error>{ [weak self] promise in
-            guard let self else { return }
-            do {
-                let students = try self.container.viewContext.fetch(fetchRequest)
-                promise(.success(students))
-            } catch {
-                promise(.failure(error))
-            }
-        }
-        .eraseToAnyPublisher()
+        logger.debug(#function)
+        return repository.fetch()
     }
 }
