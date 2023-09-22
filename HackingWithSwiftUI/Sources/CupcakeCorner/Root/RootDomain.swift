@@ -128,8 +128,7 @@ public struct RootDomain: ReducerDomain {
     
     public static let liveStore = Store(
         state: Self.State(),
-        reducer: Self(),
-        logExhaustive: .action
+        reducer: Self()
     )
 }
 
