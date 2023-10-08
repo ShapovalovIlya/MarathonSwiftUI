@@ -20,16 +20,17 @@ import OSLog
 // (URL) -> AnyPublisher<T, Error>
 
 public struct ApiClient {
-    private let logger = Logger(
-        subsystem: Bundle.module.bundleIdentifier!,
-        category: String(describing: Self.self)
-    )
+    private let logger: Logger?
     private let session: URLSession
     typealias Request = (URLRequest) -> URLRequest
     public typealias ResponsePublisher = AnyPublisher<(data: Data, response: URLResponse), Error>
     
-    public init(session: URLSession = .shared) {
+    public init(
+        session: URLSession = .shared,
+        logger: Logger? = nil
+    ) {
         self.session = session
+        self.logger = logger
     }
     
     public func send<T: Decodable>(order: Encodable) -> AnyPublisher<T, Error> {
@@ -43,10 +44,9 @@ public struct ApiClient {
     }
     
     func getRequest<T: Decodable>(url: URL) -> AnyPublisher<T, Error> {
-        compose(
-            makeRequest(.GET),
-            dataTaskPublisher(session: session)
-        )(url)
+        Box(url)
+            .map(makeRequest(.GET))
+            .flatMap(dataTaskPublisher(session: session))
             .map(\.data)
             .decode(type: T.self, decoder: JSONDecoder())
             .eraseToAnyPublisher()
@@ -54,11 +54,10 @@ public struct ApiClient {
 
     
     public func postRequest(url: URL, content: Encodable) -> ResponsePublisher {
-        compose(
-            makeRequest(.POST),
-            addData(from: content),
-            dataTaskPublisher(session: session)
-        )(url)
+        Box(url)
+            .map(makeRequest(.POST))
+            .map(addData(from: content))
+            .flatMap(dataTaskPublisher(session: session))
     }
 }
 
